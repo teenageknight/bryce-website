@@ -1,50 +1,57 @@
 import React from "react";
 
-export function FWACalculatorPage() {
-    const GEOCODING_BASE_URL = "/geocoder/geographies/onelineaddress?";
+import { validateAddressTest } from "../services/functions";
 
+export function FWACalculatorPage() {
     const [addressInput, setAddressInput] = React.useState<string | undefined>();
     const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>(false);
     const [validAddresses, setValidAddresses] = React.useState<(boolean | string)[] | undefined>([]);
+    const [geocodeResults, setGeocodeResults] = React.useState<any[] | undefined>([]);
     const [addresses, setAddresses] = React.useState<string[] | undefined>([]);
 
-    console.log(validAddresses);
+    console.log("geocodeResults", geocodeResults);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setAddresses(addressInput?.split("\n"));
 
+        setValidAddresses(new Array(addresses?.length).fill("loading"));
+        validateAddressTest({ addresses: addresses })
+            .then(result => {
+                let data: any = result.data;
+                console.log("data", data);
+                let response_addrs: any[] = data.addresses;
+                console.log("response_addrs", response_addrs);
+                let errors: any[] = data.errors;
+                console.log(errors);
+                setGeocodeResults(response_addrs);
+                response_addrs.forEach((address: any, index: number) => {
+                    if (address.result.addressMatches.length > 0 && address.result.addressMatches[0]) {
+                        setValidAddresses(prevState => {
+                            if (prevState) {
+                                let newState = [...prevState];
+                                newState[index] = true;
+                                return newState;
+                            }
+                            return prevState;
+                        });
+                    } else {
+                        setValidAddresses(prevState => {
+                            if (prevState) {
+                                let newState = [...prevState];
+                                newState[index] = false;
+                                return newState;
+                            }
+                            return prevState;
+                        });
+                    }
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            });
+
         setUnsavedChanges(false);
-    };
-
-    React.useEffect(() => {
-        function validateAddresses() {
-            setValidAddresses(new Array(addresses?.length).fill("loading"));
-            addresses?.forEach(async (address, index) => {
-                await validateAddress(address, index);
-            });
-        }
-        if (addresses && addresses.length > 0) {
-            validateAddresses();
-        }
-    }, [addresses]);
-
-    const validateAddress = async (address: string, index: number) => {
-        let params = "address=" + encodeURI(address) + "&benchmark=4&vintage=4&format=json";
-        console.log(params);
-        let x = await fetch(GEOCODING_BASE_URL + params, { method: "GET" });
-        let response = await x.json();
-        console.log(response);
-        if (response.result.addressMatches.length > 0 && response.result.addressMatches[0]) {
-            setValidAddresses(prevState => {
-                if (prevState) {
-                    let newState = [...prevState];
-                    newState[index] = true;
-                    return newState;
-                }
-                return prevState;
-            });
-        }
     };
 
     return (
@@ -66,20 +73,29 @@ export function FWACalculatorPage() {
                 </label>
                 <input type="submit" value="Submit" />
             </form>
-            {addresses && addresses.length > 0 && (
-                <div>
-                    <p>Before you submit, verify the following information...</p>
-                    <p>Number of Addresses: {addresses.length}</p>
-                    {addresses.map((address, index) => (
+
+            {/* This will be the table. Eventually this needs to be abstracted. */}
+            <div>Number of Addresses: {addresses?.length}</div>
+            <div>
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+                    <div>Num</div>
+                    <div>Valid Address</div>
+                    <div>Address</div>
+                </div>
+                {addresses?.map((address, index) => (
+                    <div key={index} style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+                        <div>{index + 1}</div>
                         <div>
-                            <div>{index + 1 + ": " + address}</div>
-                            {validAddresses && validAddresses.length == addresses.length && (
-                                <div>{validAddresses[index].toString()}</div>
+                            {validAddresses && validAddresses.length === addresses.length ? (
+                                <div>{validAddresses[index] ? "Valid" : "Invalid"}</div>
+                            ) : (
+                                <div>loading</div>
                             )}
                         </div>
-                    ))}
-                </div>
-            )}
+                        <div>{address}</div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
