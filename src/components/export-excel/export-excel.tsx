@@ -1,6 +1,7 @@
 import React from "react";
 import XLSX from "sheetjs-style";
 import * as FileSaver from "file-saver";
+import Button from "react-bootstrap/Button";
 
 type ExcelDataProps = {
     excelData: any;
@@ -22,9 +23,9 @@ const ExportExcel: React.FC<ExcelDataProps> = p => {
 
     return (
         <>
-            <button onClick={e => exportToExcel(fileName)} color="primary">
+            <Button variant="success" size="lg" onClick={e => exportToExcel(fileName)} color="primary">
                 Export to Excel
-            </button>
+            </Button>
         </>
     );
 };

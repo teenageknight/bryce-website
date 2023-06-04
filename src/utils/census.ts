@@ -47,7 +47,7 @@ let census_codes: any = {
     actual_multi_race: "B02001_008E",
 };
 
-function add_census_data_to_row(row: any, census_data: any[]) {
+function add_census_data_to_row(row: any, census_data: any[], index: number) {
     if (census_data.length >= 1) {
         let census_data_final = createObject(census_data[0], census_data[1]);
         let population = census_data_final[census_codes.POPULATION];
@@ -81,21 +81,31 @@ function add_census_data_to_row(row: any, census_data: any[]) {
         let actual_indian = census_data_final[census_codes.actual_indian];
         let actual_multi_race = census_data_final[census_codes.actual_multi_race];
 
+        let rowNumStr = (index + 2).toString();
+
         row["population"] = population;
         row["population04"] = population04;
         row["population0517"] = population0517;
         row["population65"] = population65;
         row["households"] = households;
         row["householdsbp"] = householdsbp;
+        row["perc_house_bp"] = "=O" + rowNumStr + "/N" + rowNumStr;
         row["mhi"] = mhi;
         row["labor_force"] = labor_force;
         row["unemployed"] = unemployed;
+        row["perc_unemployed"] = "=S" + rowNumStr + "/R" + rowNumStr;
         row["median_resident_age"] = median_resident_age;
+        row["perc_latino"] = "=W" + rowNumStr + "/J" + rowNumStr;
         row["actual_latino"] = actual_latino;
+        row["perc_black"] = "=Y" + rowNumStr + "/J" + rowNumStr;
         row["actual_black"] = actual_black;
+        row["perc_white"] = "=AA" + rowNumStr + "/J" + rowNumStr;
         row["actual_white"] = actual_white;
+        row["perc_asian"] = "=AC" + rowNumStr + "/J" + rowNumStr;
         row["actual_asian"] = actual_asian;
+        row["perc_indian"] = "=AE" + rowNumStr + "/J" + rowNumStr;
         row["actual_indian"] = actual_indian;
+        row["perc_multi_race"] = "=AG" + rowNumStr + "/J" + rowNumStr;
         row["actual_multi_race"] = actual_multi_race;
     }
 
