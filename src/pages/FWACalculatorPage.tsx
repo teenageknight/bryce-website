@@ -174,19 +174,47 @@ export function FWACalculatorPage() {
 
     return (
         <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
-            <h1>FWA Calculator Page</h1>
+            <h1>FWA Census Calculator Tool</h1>
             <p>
-                Instructions: This calculator takes in a list of addresses. Each address should be on its own line. Once
-                you hit submit, the button will be disabled and a query is made to help identify if the address has a
-                valid code. This is essentially a request to
-                https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress, which is a geocoding service. If
-                the address is invalid, it will show that on the page, and the address will be removed from the output
-                list. To fix this, please use an address nearby. Once the addresses are validated, the addresses are
-                then passed to the census api to get the census data. Once the census data is retrieved, the data is
-                then parsed and added to the table. This request takes some time, so just be patient. Once the table is
-                complete, you will be prompted with an option to download the excel data. If you need to reset the form,
-                you can do so by clicking the reset button.
+                This calculator tool will help automate the process of finding and reporting census data surrounding the
+                farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
+            <ol>
+                <li>
+                    Compile a list of the addresses you seek to find census date for (for example: 2022 Fall Orchards
+                    Listing)
+                </li>
+                <li>
+                    Each address should be on its own line and should be formatted as follows: 970 Jefferson Street NW,
+                    Atlanta, GA 30318
+                </li>
+                <li>
+                    Once you have entered all addresses, click submit. The button will be disabled, and a query will run
+                    to help validate each address. (This is essentially a request to{" "}
+                    <a href="https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress">
+                        https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress
+                    </a>
+                    , which is a geocoding service)
+                </li>
+                <li>
+                    If the address is invalid, it will show that on the page, and the address will be removed from the
+                    output list.
+                </li>
+                <li>
+                    To fix this, please use an address nearby (search Google maps for an address that is adjacent) and
+                    resubmit to validate.
+                </li>
+                <li>
+                    Once the addresses are validated, the addresses are then passed to the census API (application
+                    programming interface-ie- the automation tool) to get the census data.
+                </li>
+                <li>Once the census data is retrieved, the data is then parsed and formatted in a table format.</li>
+                <li>This request may take some time, so be patient.</li>
+                <li>
+                    Once the table is complete, you will be prompted with an option to download the excel data. If you
+                    need to reset the form, you can do so by clicking the reset button.
+                </li>
+            </ol>
             {submitted && (
                 <div>
                     <Button
