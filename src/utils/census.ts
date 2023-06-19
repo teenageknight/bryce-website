@@ -19,6 +19,35 @@ let census_codes: any = {
     POPULATION: "B01001_001E",
     population04: ["B01001_003E", "B01001_027E"],
     population0517: ["B01001_004E", "B01001_005E", "B01001_006E", "B01001_028E", "B01001_029E", "B01001_030E"],
+    // Just going to do this as a calculation for now
+    // population1864: [
+    //     "B01001_007E",
+    //     "B01001_008E",
+    //     "B01001_009E",
+    //     "B01001_010E",
+    //     "B01001_011E",
+    //     "B01001_012E",
+    //     "B01001_013E",
+    //     "B01001_014E",
+    //     "B01001_015E",
+    //     "B01001_016E",
+    //     "B01001_017E",
+    //     "B01001_018E",
+    //     "B01001_019E",
+    //     "B01001_031E",
+    //     "B01001_032E",
+    //     "B01001_033E",
+    //     "B01001_034E",
+    //     "B01001_035E",
+    //     "B01001_036E",
+    //     "B01001_037E",
+    //     "B01001_038E",
+    //     "B01001_039E",
+    //     "B01001_040E",
+    //     "B01001_041E",
+    //     "B01001_042E",
+    //     "B01001_043E",
+    // ],
     population65: [
         "B01001_020E",
         "B01001_021E",
@@ -86,11 +115,12 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
         row["population"] = population;
         row["population04"] = population04;
         row["population0517"] = population0517;
+        row["population1864"] = population - population04 - population0517 - population65;
         row["population65"] = population65;
         row["households"] = households;
         row["householdsbp"] = householdsbp;
         row["perc_house_bp"] = "=O" + rowNumStr + "/N" + rowNumStr;
-        row["mhi"] = mhi;
+        row["mhi"] = mhi < -666666 ? "ERROR" : mhi; // -666666 sometimes is returned for this value, not sure why
         row["labor_force"] = labor_force;
         row["unemployed"] = unemployed;
         row["perc_unemployed"] = "=S" + rowNumStr + "/R" + rowNumStr;

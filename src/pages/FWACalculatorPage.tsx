@@ -21,27 +21,35 @@ export function FWACalculatorPage() {
     const [status, setStatus] = React.useState<status | undefined>("");
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
-    // console.log("geocodeResults", geocodeResults);
-    // console.log("addresses", addresses);
-    // console.log("addressInput", addressInput);
-    // console.log("tableData", tableData);
+    console.log("addresses", addresses);
+    console.log("invalidAddresses", invalidAddresses);
+    console.log("geocodeResults", geocodeResults);
+    console.log("tableData", tableData);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setStatus("submitted");
         let temp_addresses = addressInput?.split("\n") || [];
+        let all_response_addrs: any[] = [];
+        let all_addresses = [...temp_addresses];
 
         if (temp_addresses.length === 0) {
             return;
         }
 
         setStatus("getting-geocode");
-        validateAddress({ addresses: temp_addresses })
-            .then(result => {
+        setProgress(20);
+        // Chuck the responses in groups of 20, an arbitrary number that should keep runtimes low and show progress.
+        for (let i = 0; i < all_addresses.length / 20; i++) {
+            try {
+                var chunked_addresses = all_addresses.slice(
+                    i * 20, // Starting at the index of the current chunk
+                    i * 20 + 20 // Going to the index plus 20, if it is greater than the length of the array, it will just go to the end.
+                );
+                let result = await validateAddress({ addresses: chunked_addresses });
                 let data: any = result.data;
                 let response_addrs: any[] = data.addresses;
                 let errors: any[] = data.errors;
                 console.log("errors", errors);
-                let all_addresses = [...temp_addresses];
                 response_addrs.forEach((address: any, index: number) => {
                     if (address.result.addressMatches.length === 0 && !address.result.addressMatches[0]) {
                         setInvalidAddresses(prevState => {
@@ -55,12 +63,16 @@ export function FWACalculatorPage() {
                         temp_addresses.splice(index, 1);
                     }
                 });
-                setAddresses(temp_addresses);
-                setGeocodeResults(response_addrs);
-            })
-            .catch(error => {
-                console.log(error);
-            });
+                all_response_addrs = all_response_addrs.concat(response_addrs);
+            } catch {
+                console.log("Error");
+            }
+
+            let tempProgressPercent = i + 1 / (all_addresses.length / 20) > 1 ? 1 : i + 1 / (all_addresses.length / 20);
+            setProgress(20 + tempProgressPercent * 40);
+        }
+        setAddresses(temp_addresses);
+        setGeocodeResults(all_response_addrs);
         setSubmitted(true);
     };
 
@@ -124,16 +136,22 @@ export function FWACalculatorPage() {
     }, [geocodeResults, parsedGeocodeResults, invalidAddresses, addresses]);
 
     React.useEffect(() => {
-        function getCensusData(tableData: any) {
+        async function getCensusData(tableData: any) {
             setStatus("getting-census");
-            getCensusDataQuery({ table: tableData })
-                .then((result: any) => {
-                    console.log("result", result);
-                    setCensusResults(result.data.response);
-                })
-                .catch((error: any) => {
-                    console.log("error", error);
-                });
+            setProgress(65);
+            // Same thing as geocode, chunk in groups of 20, update progress bar accordingly, both to limit runtime and show progress.
+            // Could consider in the future running the code in sync, but that would be a lot of requests.
+            let censusResults: any[] = [];
+
+            for (let i = 0; i < tableData.length / 20; i++) {
+                let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch(
+                    (err: any) => console.log(err)
+                );
+                let tempProgressPercent = i + 1 / (tableData.length / 20) > 1 ? 1 : i + 1 / (tableData.length / 20);
+                setProgress(65 + tempProgressPercent * 30);
+                censusResults = censusResults.concat(result.data.response);
+            }
+            setCensusResults(censusResults);
         }
 
         if (parsedGeocodeResults && censusResults && censusResults.length === 0) {
@@ -159,14 +177,10 @@ export function FWACalculatorPage() {
     }, [censusResults, status, tableData]);
 
     React.useEffect(() => {
-        if (status === "getting-geocode") {
-            setProgress(20);
-        } else if (status === "parsing-geocode") {
+        if (status === "parsing-geocode") {
             setProgress(60);
-        } else if (status === "getting-census") {
-            setProgress(80);
         } else if (status === "parsing-census") {
-            setProgress(90);
+            setProgress(95);
         } else if (status === "done") {
             setProgress(100);
         }
@@ -174,7 +188,7 @@ export function FWACalculatorPage() {
 
     return (
         <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
-            <h1>FWA Census Calculator Tool</h1>
+            <h1>Census Data Automation Tool</h1>
             <p>
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
@@ -209,12 +223,16 @@ export function FWACalculatorPage() {
                     programming interface-ie- the automation tool) to get the census data.
                 </li>
                 <li>Once the census data is retrieved, the data is then parsed and formatted in a table format.</li>
-                <li>This request may take some time, so be patient.</li>
+                <li>
+                    This request may take some time, so be patient. Requests are chucked in groups of 20 to handle large
+                    requests and to not stall, so the progress bar will jump in increments to reflect this.
+                </li>
                 <li>
                     Once the table is complete, you will be prompted with an option to download the excel data. If you
                     need to reset the form, you can do so by clicking the reset button.
                 </li>
             </ol>
+            <p>For any inquires, please reach out to bkajackson9@gmail.com.</p>
             {submitted && (
                 <div>
                     <Button
@@ -262,7 +280,7 @@ export function FWACalculatorPage() {
                         again.
                     </div>
                     {invalidAddresses?.map((address: string, index: number) => (
-                        <div>{address}</div>
+                        <div key={index}>{address}</div>
                     ))}
                 </>
             )}
