@@ -21,10 +21,10 @@ export function FWACalculatorPage() {
     const [status, setStatus] = React.useState<status | undefined>("");
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
-    console.log("addresses", addresses);
-    console.log("invalidAddresses", invalidAddresses);
-    console.log("geocodeResults", geocodeResults);
-    console.log("tableData", tableData);
+    // console.log("addresses", addresses);
+    // console.log("invalidAddresses", invalidAddresses);
+    // console.log("geocodeResults", geocodeResults);
+    // console.log("tableData", tableData);
 
     const handleSubmit = async () => {
         setStatus("submitted");
@@ -103,6 +103,7 @@ export function FWACalculatorPage() {
                 ) {
                     var matched_address_result: any = geocoding_data.result.addressMatches[0];
                     var state = matched_address_result["addressComponents"]["state"];
+                    var state_code = matched_address_result["geographies"]["Census Tracts"][0]["STATE"];
                     var city = matched_address_result["addressComponents"]["city"];
                     var zip_code = matched_address_result["addressComponents"]["zip"];
                     var county = matched_address_result["geographies"]["Counties"][0]["BASENAME"];
@@ -115,6 +116,7 @@ export function FWACalculatorPage() {
                     var row: any = {};
                     row["address"] = address;
                     row["state"] = state;
+                    row["state_code"] = state_code;
                     row["city"] = city;
                     row["zip_code"] = zip_code;
                     row["county"] = county;

@@ -52,7 +52,7 @@ export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request 
             "&for=block%20group:" +
             row.block_group +
             "&in=state:" +
-            "13" +
+            row.state_code +
             "%20county:" +
             row.county_code +
             "%20tract:" +
@@ -67,9 +67,13 @@ export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request 
             errors.push(error);
         });
 
-        let json_response = await res.json();
+        try {
+            let json_response = await res.json();
 
-        json_responses.push(json_response);
+            json_responses.push(json_response);
+        } catch {
+            console.log("error in json", res);
+        }
     }
 
     return { response: json_responses, error: errors };
