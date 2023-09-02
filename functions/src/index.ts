@@ -9,6 +9,8 @@
 
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
+const Geocodio = require("geocodio-library-node");
+const geocoder = new Geocodio("API_KEY");
 
 // import * as logger from "firebase-functions/logger";
 
@@ -18,24 +20,36 @@ const fetch = require("node-fetch");
 export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request => {
     console.log("request.body", request.data.addresses);
     let addresses = request.data.addresses;
-    const GEOCODING_BASE_URL = "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?";
-    let addresses_response: any[] = [];
+    // const GEOCODING_BASE_URL = "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?";
+    // let addresses_response: any[] = [];
     let errors: any[] = [];
 
-    for (const address of addresses) {
-        let params = "address=" + encodeURI(address) + "&benchmark=4&vintage=4&format=json";
-        let url = GEOCODING_BASE_URL + params;
-        let res = await fetch(url).catch((error: any) => {
-            console.log("error", error);
-            errors.push(error);
+    // for (const address of addresses) {
+    //     let params = "address=" + encodeURI(address) + "&benchmark=4&vintage=4&format=json";
+    //     let url = GEOCODING_BASE_URL + params;
+    //     let res = await fetch(url).catch((error: any) => {
+    //         console.log("error", error);
+    //         errors.push(error);
+    //     });
+
+    //     let json_response = await res.json();
+
+    //     addresses_response.push(json_response);
+    // }
+
+    await geocoder
+        .geocode(addresses)
+        .then((response: any) => {
+            console.log(response);
+            return { addresses: response, error: errors };
+        })
+        .catch((err: any) => {
+            console.error(err);
         });
 
-        let json_response = await res.json();
-
-        addresses_response.push(json_response);
-    }
-
-    return { addresses: addresses_response, error: errors };
+    console.log("returning");
+    return { addresses: addresses, error: errors };
+    // return { addresses: addresses_response, error: errors };
 });
 
 export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request => {

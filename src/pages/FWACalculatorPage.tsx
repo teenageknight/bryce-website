@@ -25,6 +25,35 @@ export function FWACalculatorPage() {
     // console.log("invalidAddresses", invalidAddresses);
     // console.log("geocodeResults", geocodeResults);
     // console.log("tableData", tableData);
+    // Example POST method implementation:
+    async function postData(url = "", data = {}) {
+        // Default options are marked with *
+        const response = await fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "no-cors", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "test/plain",
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: "follow", // manual, *follow, error
+            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        });
+        return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    async function logMovies() {
+        const response = await fetch(
+            "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=703%20West%20Park%20Avenue,%20Valdosta%20Ga&benchmark=4&vintage=4&format=json"
+        ).catch(err => console.log(err));
+        if (response) {
+            console.log(response);
+            const movies = await response.json();
+            console.log(movies);
+        }
+    }
 
     const handleSubmit = async () => {
         setStatus("submitted");
@@ -50,6 +79,7 @@ export function FWACalculatorPage() {
                 let response_addrs: any[] = data.addresses;
                 let errors: any[] = data.errors;
                 console.log("errors", errors);
+                console.log("data", data);
                 response_addrs.forEach((address: any, index: number) => {
                     if (address.result.addressMatches.length === 0 && !address.result.addressMatches[0]) {
                         setInvalidAddresses(prevState => {
@@ -64,8 +94,9 @@ export function FWACalculatorPage() {
                     }
                 });
                 all_response_addrs = all_response_addrs.concat(response_addrs);
-            } catch {
-                console.log("Error");
+            } catch (err) {
+                console.log(err);
+                alert("Something went wrong. Please try again.");
             }
 
             let tempProgressPercent = i + 1 / (all_addresses.length / 20) > 1 ? 1 : i + 1 / (all_addresses.length / 20);
@@ -191,6 +222,12 @@ export function FWACalculatorPage() {
     return (
         <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
             <h1>Census Data Automation Tool</h1>
+            <Button
+                onClick={() => {
+                    logMovies();
+                }}>
+                Test
+            </Button>
             <p>
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
