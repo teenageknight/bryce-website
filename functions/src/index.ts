@@ -17,39 +17,89 @@ const geocoder = new Geocodio("API_KEY");
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
+type ParsedGeocodedAddress =
+    | {
+          address_query: string;
+          formatted_address: string;
+          state: string;
+          state_code: string;
+          city: string;
+          zip_code: string;
+          county: string;
+          county_code: string;
+          tract: string;
+          tract_code: string;
+          block_group: string;
+      }
+    | {};
+
+/**
+ *
+ * @param address_query_geocode this represents the address that was passed to the geocoder
+ * @param geocodio_address this is the response from geocodio
+ * @returns a parsed address object that passes all of the neccary census data to the client
+ */
+function parseAddress(address_query_geocode: string, geocodio_address: any) {
+    let address: ParsedGeocodedAddress = {};
+    var address_query = address_query_geocode;
+    var formatted_address = geocodio_address["formatted_address"];
+    var state = geocodio_address["address_components"]["state"];
+    var state_code = geocodio_address["fields"]["census"]["2022"]["state_fips"];
+    var city = geocodio_address["address_components"]["city"];
+    var zip_code = geocodio_address["address_components"]["zip"];
+    var county = geocodio_address["address_components"]["county"];
+    var county_code = geocodio_address["fields"]["census"]["2022"]["county_fips"];
+    var tract = geocodio_address["fields"]["census"]["2022"]["tract_code"]; // FIXME: DEDDUPE This Eventually
+    var tract_code = geocodio_address["fields"]["census"]["2022"]["tract_code"];
+    var block_group = geocodio_address["fields"]["census"]["2022"]["block_group"];
+
+    address = {
+        address_query: address_query,
+        formatted_address: formatted_address,
+        state: state,
+        state_code: state_code,
+        city: city,
+        zip_code: zip_code,
+        county: county,
+        county_code: county_code,
+        tract: tract,
+        tract_code: tract_code,
+        block_group: block_group,
+    };
+    return address;
+}
+
 export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request => {
     console.log("request.body", request.data.addresses);
     let addresses = request.data.addresses;
-    // const GEOCODING_BASE_URL = "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?";
-    // let addresses_response: any[] = [];
-    let errors: any[] = [];
+    let addresses_response: any[] = [];
+    let invalid_addresses: any[] = [];
 
-    // for (const address of addresses) {
-    //     let params = "address=" + encodeURI(address) + "&benchmark=4&vintage=4&format=json";
-    //     let url = GEOCODING_BASE_URL + params;
-    //     let res = await fetch(url).catch((error: any) => {
-    //         console.log("error", error);
-    //         errors.push(error);
-    //     });
+    let batchGeocodeResult = await geocoder.geocode(addresses, ["census2022"]).catch((err: any) => {
+        console.warn(err);
+    });
 
-    //     let json_response = await res.json();
+    console.log("Successfully got batch geocode results.");
+    console.log("Quantity: ", batchGeocodeResult.results.length);
 
-    //     addresses_response.push(json_response);
-    // }
+    // Loop over the addresses, split up the addresses with matches and without matches.
+    // The addresses with matches get parsed and returned as a formated JSON object. The
+    // addresses without matches get returned as a string array.
 
-    await geocoder
-        .geocode(addresses)
-        .then((response: any) => {
-            console.log(response);
-            return { addresses: response, error: errors };
-        })
-        .catch((err: any) => {
-            console.error(err);
-        });
+    batchGeocodeResult.results.forEach((result: any) => {
+        if (result.response?.results && result.response.results.length > 0) {
+            let response_address = result.response.results[0];
+            console.log("response_address", response_address);
+            addresses_response.push(parseAddress(result.query, response_address));
+        } else {
+            console.log("No match for address: ", result.address);
+            invalid_addresses.push(result.query);
+        }
+    });
 
-    console.log("returning");
-    return { addresses: addresses, error: errors };
-    // return { addresses: addresses_response, error: errors };
+    let validAddresses = addresses_response.map(address => address.address_query);
+
+    return { addresses: addresses_response, invalid_addresses: invalid_addresses, validAddresses: validAddresses };
 });
 
 export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request => {

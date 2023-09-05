@@ -21,47 +21,14 @@ export function FWACalculatorPage() {
     const [status, setStatus] = React.useState<status | undefined>("");
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
-    // console.log("addresses", addresses);
-    // console.log("invalidAddresses", invalidAddresses);
-    // console.log("geocodeResults", geocodeResults);
-    // console.log("tableData", tableData);
-    // Example POST method implementation:
-    async function postData(url = "", data = {}) {
-        // Default options are marked with *
-        const response = await fetch(url, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            mode: "no-cors", // no-cors, *cors, same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-                "Content-Type": "test/plain",
-                // 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            redirect: "follow", // manual, *follow, error
-            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
-        });
-        return response.json(); // parses JSON response into native JavaScript objects
-    }
-
-    async function logMovies() {
-        const response = await fetch(
-            "https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=703%20West%20Park%20Avenue,%20Valdosta%20Ga&benchmark=4&vintage=4&format=json"
-        ).catch(err => console.log(err));
-        if (response) {
-            console.log(response);
-            const movies = await response.json();
-            console.log(movies);
-        }
-    }
-
     const handleSubmit = async () => {
         setStatus("submitted");
-        let temp_addresses = addressInput?.split("\n") || [];
-        let all_response_addrs: any[] = [];
-        let all_addresses = [...temp_addresses];
+        let all_addresses = addressInput?.split("\n") || [];
+        let geocode_results: any[] = [];
+        let valid_addresses: string[] = [];
+        let invalid_addresses: string[] = [];
 
-        if (temp_addresses.length === 0) {
+        if (all_addresses.length === 0) {
             return;
         }
 
@@ -77,23 +44,16 @@ export function FWACalculatorPage() {
                 let result = await validateAddress({ addresses: chunked_addresses });
                 let data: any = result.data;
                 let response_addrs: any[] = data.addresses;
-                let errors: any[] = data.errors;
-                console.log("errors", errors);
+                let invalidAddresses: any[] = data.invalid_addresses;
+                let validAddresses: any[] = data.valid_addresses;
+
+                console.log("response_addrs", response_addrs);
+                console.log("errors", invalid_addresses);
                 console.log("data", data);
-                response_addrs.forEach((address: any, index: number) => {
-                    if (address.result.addressMatches.length === 0 && !address.result.addressMatches[0]) {
-                        setInvalidAddresses(prevState => {
-                            if (prevState) {
-                                let newState = [...prevState];
-                                newState.push(all_addresses[index]);
-                                return newState;
-                            }
-                            return prevState;
-                        });
-                        temp_addresses.splice(index, 1);
-                    }
-                });
-                all_response_addrs = all_response_addrs.concat(response_addrs);
+
+                invalid_addresses = invalid_addresses.concat(invalidAddresses);
+                valid_addresses = valid_addresses.concat(validAddresses);
+                geocode_results = geocode_results.concat(response_addrs);
             } catch (err) {
                 console.log(err);
                 alert("Something went wrong. Please try again.");
@@ -102,8 +62,9 @@ export function FWACalculatorPage() {
             let tempProgressPercent = i + 1 / (all_addresses.length / 20) > 1 ? 1 : i + 1 / (all_addresses.length / 20);
             setProgress(20 + tempProgressPercent * 40);
         }
-        setAddresses(temp_addresses);
-        setGeocodeResults(all_response_addrs);
+        setInvalidAddresses(invalid_addresses);
+        setAddresses(valid_addresses);
+        setGeocodeResults(geocode_results);
         setSubmitted(true);
     };
 
@@ -124,46 +85,26 @@ export function FWACalculatorPage() {
         function writeGeocodeToTable(geocodeResults: any) {
             setStatus("parsing-geocode");
             let table: any[] = [];
-            geocodeResults.forEach((geocoding_data: any, index: number) => {
+            geocodeResults.forEach((geocoding_data: any) => {
                 // This is where the table data will be written to the table for the first time.
-                if (
-                    addresses &&
-                    addresses[index] &&
-                    geocoding_data["result"]["addressMatches"] &&
-                    geocoding_data["result"]["addressMatches"][0]
-                ) {
-                    var matched_address_result: any = geocoding_data.result.addressMatches[0];
-                    var state = matched_address_result["addressComponents"]["state"];
-                    var state_code = matched_address_result["geographies"]["Census Tracts"][0]["STATE"];
-                    var city = matched_address_result["addressComponents"]["city"];
-                    var zip_code = matched_address_result["addressComponents"]["zip"];
-                    var county = matched_address_result["geographies"]["Counties"][0]["BASENAME"];
-                    var county_code = matched_address_result["geographies"]["Census Tracts"][0]["COUNTY"];
-                    var tract = matched_address_result["geographies"]["Census Tracts"][0]["BASENAME"];
-                    var tract_code = matched_address_result["geographies"]["Census Tracts"][0]["TRACT"];
-                    var block_group = matched_address_result["geographies"]["2020 Census Blocks"][0]["BLKGRP"];
-                    var address = geocoding_data.result.input.address.address;
+                var row: any = {};
+                row["address"] = geocoding_data.address_formatted;
+                row["state"] = geocoding_data.state;
+                row["state_code"] = geocoding_data.state_code;
+                row["city"] = geocoding_data.city;
+                row["zip_code"] = geocoding_data.zip_code;
+                row["county"] = geocoding_data.county;
+                row["county_code"] = geocoding_data.county_code;
+                row["tract"] = geocoding_data.tract;
+                row["tract_code"] = geocoding_data.tract_code;
+                row["block_group"] = geocoding_data.block_group;
 
-                    var row: any = {};
-                    row["address"] = address;
-                    row["state"] = state;
-                    row["state_code"] = state_code;
-                    row["city"] = city;
-                    row["zip_code"] = zip_code;
-                    row["county"] = county;
-                    row["county_code"] = county_code;
-                    row["tract"] = tract;
-                    row["tract_code"] = tract_code;
-                    row["block_group"] = block_group;
-
-                    table.push(row);
-                    setParsedGeocodeResults(true);
-                }
+                table.push(row);
+                setParsedGeocodeResults(true);
             });
             setTableData(table);
         }
         if (geocodeResults && geocodeResults.length > 0 && !parsedGeocodeResults) {
-            console.log("Fired...");
             writeGeocodeToTable(geocodeResults);
         }
     }, [geocodeResults, parsedGeocodeResults, invalidAddresses, addresses]);
@@ -222,12 +163,6 @@ export function FWACalculatorPage() {
     return (
         <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
             <h1>Census Data Automation Tool</h1>
-            <Button
-                onClick={() => {
-                    logMovies();
-                }}>
-                Test
-            </Button>
             <p>
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
