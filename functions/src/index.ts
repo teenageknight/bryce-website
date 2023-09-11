@@ -71,6 +71,7 @@ function parseAddress(address_query_geocode: string, geocodio_address: any) {
 
 export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request => {
     console.log("request.body", request.data.addresses);
+    console.log("request.body", request.data.addresses.length);
     let addresses = request.data.addresses;
     let addresses_response: any[] = [];
     let invalid_addresses: any[] = [];
