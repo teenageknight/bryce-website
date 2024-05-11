@@ -118,6 +118,8 @@ export function FWACalculatorPage() {
             let censusResults: any[] = [];
 
             for (let i = 0; i < tableData.length / 20; i++) {
+                console.log(i);
+                console.log("getting query");
                 let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch(
                     (err: any) => console.log(err)
                 );

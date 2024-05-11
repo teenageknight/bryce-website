@@ -10,7 +10,7 @@
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
-const geocoder = new Geocodio("API_KEY");
+const geocoder = new Geocodio("ee7f465299ff94c4c599006760c2ec575762cc9");
 
 // import * as logger from "firebase-functions/logger";
 
@@ -44,15 +44,17 @@ function parseAddress(address_query_geocode: string, geocodio_address: any) {
     var address_query = address_query_geocode;
     var formatted_address = geocodio_address["formatted_address"];
     var state = geocodio_address["address_components"]["state"];
-    var state_code = geocodio_address["fields"]["census"]["2022"]["state_fips"];
+    var state_code = geocodio_address["fields"]["census"]["2020"]["state_fips"];
     var city = geocodio_address["address_components"]["city"];
     var zip_code = geocodio_address["address_components"]["zip"];
     var county = geocodio_address["address_components"]["county"];
-    var county_code = geocodio_address["fields"]["census"]["2022"]["county_fips"];
-    var tract = geocodio_address["fields"]["census"]["2022"]["tract_code"]; // FIXME: DEDDUPE This Eventually
-    var tract_code = geocodio_address["fields"]["census"]["2022"]["tract_code"];
-    var block_group = geocodio_address["fields"]["census"]["2022"]["block_group"];
+    var county_code = geocodio_address["fields"]["census"]["2020"]["county_fips"];
+    var tract = geocodio_address["fields"]["census"]["2020"]["tract_code"]; // FIXME: DEDDUPE This Eventually
+    var tract_code = geocodio_address["fields"]["census"]["2020"]["tract_code"];
+    var block_group = geocodio_address["fields"]["census"]["2020"]["block_group"];
 
+    // For some reason, the county code is the state code followed by a 3 digit number representing the code.
+    // For that reason, we need to strip off this state code from the county_code, as follows
     address = {
         address_query: address_query,
         formatted_address: formatted_address,
@@ -61,11 +63,12 @@ function parseAddress(address_query_geocode: string, geocodio_address: any) {
         city: city,
         zip_code: zip_code,
         county: county,
-        county_code: county_code,
+        county_code: county_code.slice(state_code.length),
         tract: tract,
         tract_code: tract_code,
         block_group: block_group,
     };
+
     return address;
 }
 
@@ -76,7 +79,7 @@ export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request =
     let addresses_response: any[] = [];
     let invalid_addresses: any[] = [];
 
-    let batchGeocodeResult = await geocoder.geocode(addresses, ["census2022"]).catch((err: any) => {
+    let batchGeocodeResult = await geocoder.geocode(addresses, ["census2020"]).catch((err: any) => {
         console.warn(err);
     });
 
