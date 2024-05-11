@@ -10,7 +10,7 @@
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
-const geocoder = new Geocodio("ee7f465299ff94c4c599006760c2ec575762cc9");
+const geocoder = new Geocodio("API_CODE");
 
 // import * as logger from "firebase-functions/logger";
 
