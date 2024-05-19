@@ -1,3 +1,5 @@
+import React from "react";
+
 import { getCensusDataQuery } from "../services/functions";
 export function HomePage() {
     return (

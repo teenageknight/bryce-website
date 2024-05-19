@@ -26,7 +26,8 @@
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "lint": "eslint ."
     },
     "eslintConfig": {
         "extends": [
@@ -47,6 +48,11 @@
         ]
     },
     "devDependencies": {
-        "@types/file-saver": "^2.0.5"
+        "@eslint/js": "^9.3.0",
+        "@types/file-saver": "^2.0.5",
+        "eslint": "^8.57.0",
+        "eslint-plugin-react": "^7.34.1",
+        "globals": "^15.3.0",
+        "typescript-eslint": "^7.9.0"
     }
 }

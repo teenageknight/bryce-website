@@ -1,0 +1,16 @@
+name: CI
+on: [push]
+jobs:
+    check-bats-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "16"
+            - name: Install Node modules
+              run: npm install
+            - name: Linting
+              run: echo 'TODO Add Linting'
+            #   run: npm run lint
