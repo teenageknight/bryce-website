@@ -13,4 +13,5 @@ jobs:
               run: npm install
             - name: Linting
               run: echo 'TODO Add Linting'
-            #   run: npm run lint
+            - name: Type
+              run: tsc
