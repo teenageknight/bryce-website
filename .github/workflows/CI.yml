@@ -1,7 +1,7 @@
 name: CI
 on: [push]
 jobs:
-    check-bats-version:
+    lint-and-type:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Branch
