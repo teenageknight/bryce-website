@@ -6,5 +6,6 @@ const functions = getFunctions(app);
 
 const validateAddress = httpsCallable(functions, "validateAddresses");
 const getCensusDataQuery = httpsCallable(functions, "getCensusDataQuery");
+const test = httpsCallable(functions, "testFunction");
 
-export { validateAddress, getCensusDataQuery };
+export { validateAddress, getCensusDataQuery, test };

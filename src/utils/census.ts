@@ -15,7 +15,7 @@ function createObject(arr1: any[], arr2: any[]) {
     return obj;
 }
 
-let census_codes: any = {
+const census_codes: any = {
     POPULATION: "B01001_001E",
     population04: ["B01001_003E", "B01001_027E"],
     population0517: ["B01001_004E", "B01001_005E", "B01001_006E", "B01001_028E", "B01001_029E", "B01001_030E"],
@@ -78,8 +78,8 @@ let census_codes: any = {
 
 function add_census_data_to_row(row: any, census_data: any[], index: number) {
     if (census_data.length >= 1) {
-        let census_data_final = createObject(census_data[0], census_data[1]);
-        let population = census_data_final[census_codes.POPULATION];
+        const census_data_final = createObject(census_data[0], census_data[1]);
+        const population = census_data_final[census_codes.POPULATION];
 
         // Population under 4 is sum of boys and girls
         let population04 = 0;
@@ -97,20 +97,20 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
             population65 += parseInt(census_data_final[code]);
         });
 
-        let households = census_data_final[census_codes.households];
-        let householdsbp = census_data_final[census_codes.householdsbp];
-        let mhi = census_data_final[census_codes.mhi];
-        let labor_force = census_data_final[census_codes.labor_force];
-        let unemployed = census_data_final[census_codes.unemployed];
-        let median_resident_age = census_data_final[census_codes.median_resident_age];
-        let actual_latino = census_data_final[census_codes.actual_latino];
-        let actual_black = census_data_final[census_codes.actual_black];
-        let actual_white = census_data_final[census_codes.actual_white];
-        let actual_asian = census_data_final[census_codes.actual_asian];
-        let actual_indian = census_data_final[census_codes.actual_indian];
-        let actual_multi_race = census_data_final[census_codes.actual_multi_race];
+        const households = census_data_final[census_codes.households];
+        const householdsbp = census_data_final[census_codes.householdsbp];
+        const mhi = census_data_final[census_codes.mhi];
+        const labor_force = census_data_final[census_codes.labor_force];
+        const unemployed = census_data_final[census_codes.unemployed];
+        const median_resident_age = census_data_final[census_codes.median_resident_age];
+        const actual_latino = census_data_final[census_codes.actual_latino];
+        const actual_black = census_data_final[census_codes.actual_black];
+        const actual_white = census_data_final[census_codes.actual_white];
+        const actual_asian = census_data_final[census_codes.actual_asian];
+        const actual_indian = census_data_final[census_codes.actual_indian];
+        const actual_multi_race = census_data_final[census_codes.actual_multi_race];
 
-        let rowNumStr = (index + 2).toString();
+        const rowNumStr = (index + 2).toString();
 
         row["population"] = population;
         row["population04"] = population04;
