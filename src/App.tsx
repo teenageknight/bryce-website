@@ -7,6 +7,7 @@ import { HomePage } from "./pages/HomePage";
 import { AboutPage } from "./pages/AboutPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { FWACalculatorPage } from "./pages/FWACalculatorPage";
+import { FWADataProjectPage } from "./pages/FWADataProject";
 import { Navbar } from "./components/navbar/Navbar";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 {/* This whole path will eventually need to be a project subroute. */}
                 <Route path="/fwa-census-calculator" element={<FWACalculatorPage />} />
+                <Route path="/fwa-data-project" element={<FWADataProjectPage />} />
                 {/* TODO: Make a funny page */}
                 <Route path="*" element={<p>No Page</p>} />
             </Routes>
