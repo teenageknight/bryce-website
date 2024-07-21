@@ -16,6 +16,7 @@ export default [
             semi: "error",
             "prefer-const": "error",
             "@typescript-eslint/no-explicit-any": "warn",
+            "@typescript-eslint/no-var-requires": 0,
         },
     },
 ];
