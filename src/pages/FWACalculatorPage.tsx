@@ -88,7 +88,7 @@ export function FWACalculatorPage() {
             geocodeResults.forEach((geocoding_data: any) => {
                 // This is where the table data will be written to the table for the first time.
                 var row: any = {};
-                row["address"] = geocoding_data.address_formatted;
+                row["address"] = geocoding_data.address_query;
                 row["state"] = geocoding_data.state;
                 row["state_code"] = geocoding_data.state_code;
                 row["city"] = geocoding_data.city;
@@ -109,6 +109,45 @@ export function FWACalculatorPage() {
         }
     }, [geocodeResults, parsedGeocodeResults, invalidAddresses, addresses]);
 
+    async function getCensusDataQuery({ table }: any) {
+        let json_responses: any[] = [];
+        let errors: any[] = [];
+
+        let params =
+            "get=NAME,B01001_001E,B01001_003E,B01001_027E,B01001_004E,B01001_005E,B01001_006E,B01001_028E,B01001_029E,B01001_030E,B01001_020E,B01001_021E,B01001_022E,B01001_023E,B01001_024E,B01001_025E,B01001_044E,B01001_045E,B01001_046E,B01001_047E,B01001_048E,B01001_049E,B11001_001E,B17017_002E,B19013_001E,B23025_002E,B23025_005E,B01002_001E,B03003_003E,B02001_003E,B02001_002E,B02001_005E,B02001_004E,B02001_008E";
+        // let key = "&key=a9377975bb59e3a5a904e4dc7282aba021c9c55e";
+        for (const row of table) {
+            let query =
+                "&for=block%20group:" +
+                row.block_group +
+                "&in=state:" +
+                row.state_code +
+                "%20county:" +
+                row.county_code +
+                "%20tract:" +
+                row.tract_code;
+
+            let url = "https://api.census.gov/data/2020/acs/acs5?" + params + "&get=" + query;
+
+            console.log("url", url);
+
+            let res = await fetch(url).catch((error: any) => {
+                console.log("error", error);
+                errors.push(error);
+            });
+
+            try {
+                let json_response = await res?.json();
+
+                json_responses.push(json_response);
+            } catch {
+                console.log("error in json", res);
+            }
+        }
+
+        return { response: json_responses, error: errors };
+    }
+
     React.useEffect(() => {
         async function getCensusData(tableData: any) {
             setStatus("getting-census");
@@ -117,15 +156,19 @@ export function FWACalculatorPage() {
             // Could consider in the future running the code in sync, but that would be a lot of requests.
             let censusResults: any[] = [];
 
+            console.log(tableData);
+
             for (let i = 0; i < tableData.length / 20; i++) {
                 console.log(i);
                 console.log("getting query");
                 let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch(
                     (err: any) => console.log(err)
                 );
+                console.log(result);
                 let tempProgressPercent = i + 1 / (tableData.length / 20) > 1 ? 1 : i + 1 / (tableData.length / 20);
                 setProgress(65 + tempProgressPercent * 30);
-                censusResults = censusResults.concat(result.data.response);
+                console.log("result", result);
+                censusResults = censusResults.concat(result.response);
             }
             setCensusResults(censusResults);
         }
