@@ -8,6 +8,7 @@ type ExcelDataProps = {
     fileName: string;
 };
 
+// FIXME: This needs a port to XLSX
 const ExportExcel: React.FC<ExcelDataProps> = p => {
     const { excelData, fileName } = p;
 

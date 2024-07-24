@@ -10,7 +10,6 @@ import { FWACalculatorPage } from "./pages/FWACalculatorPage";
 function App() {
     return (
         <BrowserRouter>
-            <p>Test</p>
             {/* <Navbar /> */}
             <Routes>
                 <Route path="/" element={<HomePage />} />
