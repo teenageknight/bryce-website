@@ -37,7 +37,7 @@ jobs:
             - name: Setup Pages
               uses: actions/configure-pages@v4
             - name: Test Dist Exists
-              run: cd app/ && ll
+              run: cd app/ && ls
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
