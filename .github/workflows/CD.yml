@@ -1,4 +1,4 @@
-name: Staging Deploy
+name: CD
 on:
     push:
         branches:
@@ -9,3 +9,6 @@ on:
 jobs:
     run-ci:
         uses: ./.github/workflows/CI.yml
+    deploy-firebase-functions:
+        needs: run-ci
+        uses: ./.github/workflows/Deploy-Firebase-Functions.yml
