@@ -36,6 +36,8 @@ jobs:
               run: cd app/ && npm run build
             - name: Setup Pages
               uses: actions/configure-pages@v4
+            - name: Test Dist Exists
+              run: cd app/ && ll
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
