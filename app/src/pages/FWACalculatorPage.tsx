@@ -169,7 +169,7 @@ export function FWACalculatorPage() {
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
-            <ol>
+            <ol className="list-decimal">
                 <li>
                     Compile a list of the addresses you seek to find census date for (for example: 2022 Fall Orchards
                     Listing)

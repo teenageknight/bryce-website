@@ -10,12 +10,11 @@ type PortfolioCardProps = {
     description: string;
     tags?: string[];
     variant?: PortfolioCardVariant;
-    onClick: React.MouseEventHandler<HTMLDivElement>;
 };
 // React.DOMAttributes<HTMLDivElement>.onClick
-export const PortfolioCard = ({ title, description, variant, onClick }: PortfolioCardProps): React.JSX.Element => {
+export const PortfolioCard = ({ title, description, variant }: PortfolioCardProps): React.JSX.Element => {
     return (
-        <div onClick={onClick} className="border-2 rounded p-3 border-[#30363D] hover:border-white w-1/2">
+        <div className="border-2 rounded p-3 border-[#30363D] hover:border-white w-1/2">
             <div className="flex pb-2">
                 {variant === PortfolioCardVariant.REPO ? (
                     <BookmarkSquareIcon className="size-6" />

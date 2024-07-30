@@ -28,3 +28,5 @@ dist-ssr
 firebase-debug.log
 
 .github/workflows/deploy-github-pages.yml
+
+coverage/

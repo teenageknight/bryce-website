@@ -1,4 +1,4 @@
-function createObject(arr1: any[], arr2: any[]) {
+export function createObject(arr1: any[], arr2: any[]) {
     if (arr1.length !== arr2.length) {
         throw new Error("Arrays must have the same length");
     }

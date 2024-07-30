@@ -25,3 +25,7 @@ code {
 .markdown > * {
     all: revert;
 }
+
+.link > * {
+    all: revert;
+}

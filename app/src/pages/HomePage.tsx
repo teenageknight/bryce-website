@@ -44,14 +44,12 @@ export function HomePage() {
                     <div onClick={() => {}} className="h-max mt-3">
                         <p className="font-semibold text-lg my-2">Portfolio</p>
                         {/* TODO: Create a component out of this */}
-
-                        <PortfolioCard
-                            onClick={() => {
-                                navigate("/fwa-census-calculator");
-                            }}
-                            title={"FWA Data Project"}
-                            description="This is a collection of tooling designed to assist Food Well Allience better their understanding of data"
-                        />
+                        <a href="/fwa-census-calculator">
+                            <PortfolioCard
+                                title={"FWA Data Project"}
+                                description="This is a collection of tooling designed to assist Food Well Allience better their understanding of data"
+                            />
+                        </a>
                     </div>
                 </div>
             </div>
