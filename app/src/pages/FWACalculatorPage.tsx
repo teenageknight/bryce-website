@@ -236,7 +236,7 @@ export function FWACalculatorPage() {
             <Button
                 variant="primary"
                 disabled={submitted}
-                onClick={e => {
+                onClick={_ => {
                     handleSubmit();
                 }}>
                 Submit
