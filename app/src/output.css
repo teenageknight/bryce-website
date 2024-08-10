@@ -726,6 +726,11 @@ video {
   color: rgb(141 150 160 / var(--tw-text-opacity));
 }
 
+.text-blue-600 {
+  --tw-text-opacity: 1;
+  color: rgb(37 99 235 / var(--tw-text-opacity));
+}
+
 :root {
   --background-color: #0e1117;
   --text-primary-color: #e5edf2;
@@ -747,10 +752,6 @@ code {
 }
 
 .markdown > * {
-  all: revert;
-}
-
-.link > * {
   all: revert;
 }
 

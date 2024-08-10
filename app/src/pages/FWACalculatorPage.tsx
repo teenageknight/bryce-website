@@ -3,7 +3,7 @@ import React from "react";
 import { validateAddress, getCensusDataQuery } from "../services/functions";
 import { add_census_data_to_row } from "../utils/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
-import Button from "react-bootstrap/Button";
+import { Button } from "../components/button/Button";
 import Form from "react-bootstrap/Form";
 import ProgressBar from "react-bootstrap/ProgressBar";
 
@@ -164,8 +164,8 @@ export function FWACalculatorPage() {
 
     return (
         <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
-            <h1>Census Data Automation Tool</h1>
-            <p>
+            <h1 className="text-3xl">Census Data Automation Tool</h1>
+            <p className="text-[#8D96A0]">
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
@@ -181,7 +181,9 @@ export function FWACalculatorPage() {
                 <li>
                     Once you have entered all addresses, click submit. The button will be disabled, and a query will run
                     to help validate each address. (This is essentially a request to{" "}
-                    <a href="https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress">
+                    <a
+                        className="text-blue-600"
+                        href="https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress">
                         https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress
                     </a>
                     , which is a geocoding service)
@@ -208,7 +210,7 @@ export function FWACalculatorPage() {
                     need to reset the form, you can do so by clicking the reset button.
                 </li>
             </ol>
-            <p>For any inquires, please reach out to bkajackson9@gmail.com.</p>
+            <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
             {submitted && (
                 <div>
                     <Button
