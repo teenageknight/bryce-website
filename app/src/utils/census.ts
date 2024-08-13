@@ -112,6 +112,7 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
 
         const rowNumStr = (index + 2).toString();
 
+        // row["address"] = census_data_final[];
         row["population"] = population;
         row["population04"] = population04;
         row["population0517"] = population0517;
@@ -119,23 +120,23 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
         row["population65"] = population65;
         row["households"] = households;
         row["householdsbp"] = householdsbp;
-        row["perc_house_bp"] = "=O" + rowNumStr + "/N" + rowNumStr;
+        row["perc_house_bp"] = "=Q" + rowNumStr + "/P" + rowNumStr;
         row["mhi"] = mhi < -666666 ? "ERROR" : mhi; // -666666 sometimes is returned for this value, not sure why
         row["labor_force"] = labor_force;
         row["unemployed"] = unemployed;
-        row["perc_unemployed"] = "=S" + rowNumStr + "/R" + rowNumStr;
+        row["perc_unemployed"] = "=U" + rowNumStr + "/K" + rowNumStr;
         row["median_resident_age"] = median_resident_age;
-        row["perc_latino"] = "=W" + rowNumStr + "/J" + rowNumStr;
+        row["perc_latino"] = "=Y" + rowNumStr + "/K" + rowNumStr;
         row["actual_latino"] = actual_latino;
-        row["perc_black"] = "=Y" + rowNumStr + "/J" + rowNumStr;
+        row["perc_black"] = "=AA" + rowNumStr + "/K" + rowNumStr;
         row["actual_black"] = actual_black;
-        row["perc_white"] = "=AA" + rowNumStr + "/J" + rowNumStr;
+        row["perc_white"] = "=AC" + rowNumStr + "/K" + rowNumStr;
         row["actual_white"] = actual_white;
-        row["perc_asian"] = "=AC" + rowNumStr + "/J" + rowNumStr;
+        row["perc_asian"] = "=AE" + rowNumStr + "/K" + rowNumStr;
         row["actual_asian"] = actual_asian;
-        row["perc_indian"] = "=AE" + rowNumStr + "/J" + rowNumStr;
+        row["perc_indian"] = "=AG" + rowNumStr + "/K" + rowNumStr;
         row["actual_indian"] = actual_indian;
-        row["perc_multi_race"] = "=AG" + rowNumStr + "/J" + rowNumStr;
+        row["perc_multi_race"] = "=AI" + rowNumStr + "/K" + rowNumStr;
         row["actual_multi_race"] = actual_multi_race;
     }
 

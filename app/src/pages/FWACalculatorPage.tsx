@@ -88,7 +88,7 @@ export function FWACalculatorPage() {
             geocodeResults.forEach((geocoding_data: any) => {
                 // This is where the table data will be written to the table for the first time.
                 var row: any = {};
-                row["address"] = geocoding_data.address_formatted;
+                row["address"] = geocoding_data.formatted_address;
                 row["state"] = geocoding_data.state;
                 row["state_code"] = geocoding_data.state_code;
                 row["city"] = geocoding_data.city;
@@ -140,6 +140,7 @@ export function FWACalculatorPage() {
             setStatus("parsing-census");
             let newTable: any[] = [];
             censusResults.forEach((census_data: any, index: number) => {
+                // console.log(tableData[index])
                 let row = add_census_data_to_row(tableData[index], census_data, index);
                 newTable.push(row);
             });
@@ -224,11 +225,11 @@ export function FWACalculatorPage() {
             )}
             <div style={{ display: "flex", width: "100%" }}>
                 <Form.Label style={{ width: "100%", fontSize: 20 }}>
-                    Addresses:
+                    Addresses: <br />
                     <Form.Control
                         as={"textarea"}
                         value={addressInput}
-                        style={{ height: "200px", width: "60%" }}
+                        style={{ height: "200px", width: "60%", color: "black" }}
                         onChange={event => {
                             setAddressInput(event.target.value);
                         }}
