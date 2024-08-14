@@ -1,14 +1,13 @@
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import Button from "react-bootstrap/Button";
+import { Button } from "../button/Button";
 
 type ExcelDataProps = {
     excelData: any;
     fileName: string;
 };
 
-// FIXME: This needs a port to XLSX
 const ExportExcel: React.FC<ExcelDataProps> = p => {
     const { excelData, fileName } = p;
     console.log(excelData);
@@ -26,7 +25,7 @@ const ExportExcel: React.FC<ExcelDataProps> = p => {
 
     return (
         <>
-            <Button variant="success" size="lg" onClick={e => exportToExcel(fileName)} color="primary">
+            <Button variant="success" onClick={e => exportToExcel(fileName)}>
                 Export to Excel
             </Button>
         </>

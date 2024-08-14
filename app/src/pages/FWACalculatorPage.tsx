@@ -5,7 +5,7 @@ import { add_census_data_to_row } from "../utils/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
 import Form from "react-bootstrap/Form";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import { ProgressBar } from "../components/progress-bar/Progress-Bar";
 
 type status = "" | "submitted" | "getting-geocode" | "parsing-geocode" | "getting-census" | "parsing-census" | "done";
 
