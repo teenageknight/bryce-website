@@ -1,7 +1,6 @@
 import React from "react";
 
 type ButtonProps = {
-    label?: string;
     onClick: (value: any) => void;
     disabled?: boolean;
     className?: string;
@@ -11,12 +10,15 @@ type ButtonProps = {
 
 const variantStyles = {
     default: "bg-green-700 p-2 rounded hover:bg-green-600 focus:ring focus:ring-green-700 focus:bg-green-800",
-    disabled: "",
+    disabled: "bg-slate-800 p-2 rounded",
 };
 
-const Button: React.FC<ButtonProps> = ({ label, onClick, disabled = false, className, children }) => {
+const Button: React.FC<ButtonProps> = ({ onClick, disabled = false, className, children }) => {
     return (
-        <button onClick={onClick} disabled={disabled} className={className + " " + variantStyles.default}>
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={className + " " + (disabled ? variantStyles.disabled : variantStyles.default)}>
             {...children}
         </button>
     );

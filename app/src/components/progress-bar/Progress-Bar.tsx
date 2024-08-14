@@ -9,8 +9,8 @@ const ProgressBar: React.FC<ProgressBarProps> = p => {
 
     return (
         <>
-            <div className=" w-full h-5 rounded border-2 border-gray-600">
-                <div className="bg-green-500 h-full" style={{ width: now + "%" }} />
+            <div className=" w-full h-5 rounded-lg border-2 border-gray-600">
+                <div className="bg-green-500 h-full rounded-lg" style={{ width: now + "%" }} />
             </div>
         </>
     );
