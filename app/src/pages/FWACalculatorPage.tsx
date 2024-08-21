@@ -1,16 +1,37 @@
-import React from "react";
+import React, { useEffect, useReducer } from "react";
 
 import { validateAddress, getCensusDataQuery } from "../services/functions";
 import { add_census_data_to_row } from "../utils/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
-import Form from "react-bootstrap/Form";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
 
-type status = "" | "submitted" | "getting-geocode" | "parsing-geocode" | "getting-census" | "parsing-census" | "done";
+type status =
+    | ""
+    | "validating-addresses"
+    | "addresses-validated"
+    | "submitted"
+    | "getting-geocode"
+    | "parsing-geocode"
+    | "getting-census"
+    | "parsing-census"
+    | "done";
+
+type FormState = {
+    currentAddressLine: string;
+    addresses: string[];
+    addressStatus: string[]; // This might become an enum or something else later
+    status: string;
+    geocodeResults: any[];
+};
+
+enum AddressStatus {
+    Pending = "Pending",
+    Valid = "Valid",
+    Invalid = "Invalid",
+}
 
 export function FWACalculatorPage() {
-    const [addressInput, setAddressInput] = React.useState<string | undefined>();
     const [submitted, setSubmitted] = React.useState<boolean>(false);
     const [invalidAddresses, setInvalidAddresses] = React.useState<string[] | undefined>([]);
     const [geocodeResults, setGeocodeResults] = React.useState<any[] | undefined>([]);
@@ -20,6 +41,129 @@ export function FWACalculatorPage() {
     const [addresses, setAddresses] = React.useState<string[] | undefined>([]);
     const [status, setStatus] = React.useState<status | undefined>("");
     const [progress, setProgress] = React.useState<number | undefined>(0);
+
+    const initialFormState: FormState = {
+        currentAddressLine: "",
+        addresses: [],
+        addressStatus: [],
+        status: "",
+        geocodeResults: [],
+    };
+
+    function formReducer(state: FormState, action: any): FormState {
+        switch (action.type) {
+            case "update_current_address_line":
+                return {
+                    ...state,
+                    currentAddressLine: action.payload,
+                };
+            case "add_addresses_and_update_current_address_line":
+                return {
+                    ...state,
+                    currentAddressLine: action.payload.currentAddressLine,
+                    addresses: [...state.addresses, ...action.payload.addresses],
+                };
+            case "update_address_status_pending":
+                return {
+                    ...state,
+                    addressStatus: action.payload,
+                    status: "validating-addresses",
+                };
+            case "update_address_status_done":
+                return {
+                    ...state,
+                    addressStatus: action.payload,
+                    // TODO: Add the geocode results to the state
+                    status: "addresses-validated",
+                };
+            default:
+                return state;
+        }
+    }
+
+    const [formState, formDispatch] = useReducer(formReducer, initialFormState);
+
+    const handeAddressInputChange = (e: any) => {
+        let lines = e.target.value.split("\n");
+        if (lines.length > 1) {
+            formDispatch({
+                type: "add_addresses_and_update_current_address_line",
+                payload: { addresses: lines.slice(0, lines.length - 1), currentAddressLine: lines[lines.length - 1] },
+            });
+        } else {
+            formDispatch({ type: "update_current_address_line", payload: e.target.value });
+        }
+    };
+
+    useEffect(() => {
+        // If the lengths are diffrent, then we need to update the address status
+        if (formState.addresses.length !== formState.addressStatus.length) {
+            // Lazy load the address status and if it valid or not
+            let addressStatus = new Array(formState.addresses.length).fill(AddressStatus.Pending) as string[];
+            formDispatch({ type: "update_address_status_pending", payload: addressStatus });
+            return;
+        }
+    }, [formState.addresses, formState.addressStatus]);
+
+    useEffect(() => {
+        const doWork = async () => {
+            console.log("doing work");
+            let numPending = 0;
+            let indexes = [];
+            let chunked_addresses: string[] = [];
+            let promises: Promise<any>[] = [];
+            for (let i = 0; i < formState.addresses.length; i++) {
+                if (formState.addressStatus[i] === AddressStatus.Pending) {
+                    console.log("pushing");
+                    chunked_addresses.push(formState.addresses[i]);
+                    indexes.push(i);
+                    numPending++;
+                }
+                if (chunked_addresses.length === 20) {
+                    console.log("chunked");
+                    let promise = validateAddress({ addresses: chunked_addresses });
+                    promises.push(promise);
+                    chunked_addresses = [];
+                    numPending = 0;
+                }
+            }
+            // FIXME: This will break on the last chuck or possibly push an empty array. Take care of this.
+            // Final chunk
+            let promise = validateAddress({ addresses: chunked_addresses });
+            promises.push(promise);
+
+            await Promise.all(promises);
+            const results = await Promise.all(promises);
+            console.log("results", results);
+            let resultsFormatted: { addresses: string[]; invalid_addresses: string[]; valid_addresses: string[] } = {
+                addresses: [],
+                invalid_addresses: [],
+                valid_addresses: [],
+            };
+            results.forEach((result: any) => {
+                resultsFormatted.addresses = resultsFormatted.addresses.concat(result.data.addresses);
+                resultsFormatted.invalid_addresses = resultsFormatted.invalid_addresses.concat(
+                    result.data.invalid_addresses
+                );
+                resultsFormatted.valid_addresses = resultsFormatted.valid_addresses.concat(result.data.validAddresses);
+            });
+
+            let tempStatus = [...formState.addressStatus];
+            for (let i = 0; i < indexes.length; i++) {
+                if (resultsFormatted.invalid_addresses.includes(formState.addresses[indexes[i]])) {
+                    tempStatus[indexes[i]] = AddressStatus.Invalid;
+                } else {
+                    tempStatus[indexes[i]] = AddressStatus.Valid;
+                }
+            }
+
+            formDispatch({ type: "update_address_status_done", payload: tempStatus });
+        };
+
+        if (formState.status === "validating-addresses") {
+            doWork();
+        }
+    }, [formState.status]);
 
     const handleSubmit = async () => {
         setStatus("submitted");
@@ -164,13 +308,102 @@ export function FWACalculatorPage() {
     }, [status]);
 
     return (
-        <div style={{ marginLeft: "2%", marginRight: "2%", marginTop: "10px" }}>
+        <div className="px-10" style={{ marginTop: "10px" }}>
             <h1 className="text-3xl">Census Data Automation Tool</h1>
+            {/* FIXME: Add in tooltip beside this title, showing the instructions commented out below */}
             <p className="text-[#8D96A0]">
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
-            <ol className="list-decimal">
+            {submitted && (
+                <div>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            handleReset();
+                        }}>
+                        Reset Form
+                    </Button>
+                </div>
+            )}
+            <div style={{ display: "flex", width: "100%" }}>
+                <div>
+                    {/* Title */}
+                    <h2>Addresses</h2>
+                    {/* Render all of the addressses input so far */}
+                    {/* TODO: Add this functionality */}
+                    {/* Render the input field */}
+                    {formState.addresses.map((address: string, index: number) => (
+                        // FIXME: This will need to have some additional logic to determine if the address is valid or not and what is focused on.
+                        <div key={index}>
+                            <div className="flex flex-row">
+                                <p>{index + 1}.</p>
+                                <p>{address}</p>
+                                <p>{formState.addressStatus[index]}</p>
+                            </div>
+                        </div>
+                    ))}
+                    {/* Input Row */}
+                    <div className="flex flex-row">
+                        <textarea
+                            rows={1}
+                            placeholder="Address"
+                            value={formState.currentAddressLine}
+                            onChange={e => handeAddressInputChange(e)}
+                            onKeyDown={e => e.key === "Enter"}
+                        />
+                        <p>Plus button to add</p>
+                    </div>
+                </div>
+                {/* <Form.Label style={{ width: "100%", fontSize: 20 }}>
+                    Addresses: <br />
+                    <Form.Control
+                        as={"textarea"}
+                        value={addressInput}
+                        style={{ height: "200px", width: "60%", color: "black" }}
+                        onChange={event => {
+                            setAddressInput(event.target.value);
+                        }}
+                    />
+                </Form.Label> */}
+            </div>
+            <Button
+                variant="primary"
+                disabled={true}
+                onClick={_ => {
+                    handleSubmit();
+                }}>
+                Submit
+            </Button>
+
+            <div style={{ marginTop: 15, marginBottom: 15 }}>
+                <div>Status: {status === "" ? "Waiting..." : status}</div>
+                <ProgressBar now={progress} />
+            </div>
+
+            <div>Number of Valid Addresses: {addresses?.length}</div>
+            <div>Number of Invalid Addresses: {invalidAddresses?.length}</div>
+            {invalidAddresses && invalidAddresses?.length > 0 && (
+                <>
+                    <div>
+                        The following Addresses are invalid. Please use an address nearby to fix this issue and try
+                        again.
+                    </div>
+                    {invalidAddresses?.map((address: string, index: number) => (
+                        <div key={index}>{address}</div>
+                    ))}
+                </>
+            )}
+            <div style={{ marginTop: 20 }}>
+                {status === "done" && <ExportExcel excelData={tableData} fileName={"output"} />}
+            </div>
+            <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
+        </div>
+    );
+}
+
+{
+    /* <ol className="list-decimal">
                 <li>
                     Compile a list of the addresses you seek to find census date for (for example: 2022 Fall Orchards
                     Listing)
@@ -210,62 +443,5 @@ export function FWACalculatorPage() {
                     Once the table is complete, you will be prompted with an option to download the excel data. If you
                     need to reset the form, you can do so by clicking the reset button.
                 </li>
-            </ol>
-            <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
-            {submitted && (
-                <div>
-                    <Button
-                        variant="secondary"
-                        onClick={() => {
-                            handleReset();
-                        }}>
-                        Reset Form
-                    </Button>
-                </div>
-            )}
-            <div style={{ display: "flex", width: "100%" }}>
-                <Form.Label style={{ width: "100%", fontSize: 20 }}>
-                    Addresses: <br />
-                    <Form.Control
-                        as={"textarea"}
-                        value={addressInput}
-                        style={{ height: "200px", width: "60%", color: "black" }}
-                        onChange={event => {
-                            setAddressInput(event.target.value);
-                        }}
-                    />
-                </Form.Label>
-            </div>
-            <Button
-                variant="primary"
-                disabled={submitted}
-                onClick={_ => {
-                    handleSubmit();
-                }}>
-                Submit
-            </Button>
-
-            <div style={{ marginTop: 15, marginBottom: 15 }}>
-                <div>Status: {status === "" ? "Waiting..." : status}</div>
-                <ProgressBar now={progress} />
-            </div>
-
-            <div>Number of Valid Addresses: {addresses?.length}</div>
-            <div>Number of Invalid Addresses: {invalidAddresses?.length}</div>
-            {invalidAddresses && invalidAddresses?.length > 0 && (
-                <>
-                    <div>
-                        The following Addresses are invalid. Please use an address nearby to fix this issue and try
-                        again.
-                    </div>
-                    {invalidAddresses?.map((address: string, index: number) => (
-                        <div key={index}>{address}</div>
-                    ))}
-                </>
-            )}
-            <div style={{ marginTop: 20 }}>
-                {status === "done" && <ExportExcel excelData={tableData} fileName={"output"} />}
-            </div>
-        </div>
-    );
+            </ol> */
 }
