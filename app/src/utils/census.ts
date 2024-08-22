@@ -1,3 +1,5 @@
+import { getCensusDataQuery } from "../services/functions";
+
 export function createObject(arr1: any[], arr2: any[]) {
     if (arr1.length !== arr2.length) {
         throw new Error("Arrays must have the same length");
@@ -144,4 +146,51 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
     return row;
 }
 
-export { add_census_data_to_row };
+function writeGeocodeToTable(geocodeResults: any) {
+    let table: any[] = [];
+    geocodeResults.forEach((geocoding_data: any) => {
+        // This is where the table data will be written to the table for the first time.
+        var row: any = {};
+        row["address"] = geocoding_data.formatted_address;
+        row["state"] = geocoding_data.state;
+        row["state_code"] = geocoding_data.state_code;
+        row["city"] = geocoding_data.city;
+        row["zip_code"] = geocoding_data.zip_code;
+        row["county"] = geocoding_data.county;
+        row["county_code"] = geocoding_data.county_code;
+        row["tract"] = geocoding_data.tract;
+        row["tract_code"] = geocoding_data.tract_code;
+        row["block_group"] = geocoding_data.block_group;
+
+        table.push(row);
+    });
+    return table;
+}
+
+async function getCensusData(tableData: any) {
+    // Same thing as geocode, chunk in groups of 20, update progress bar accordingly, both to limit runtime and show progress.
+    // Could consider in the future running the code in sync, but that would be a lot of requests.
+    let censusResults: any[] = [];
+
+    for (let i = 0; i < tableData.length / 20; i++) {
+        console.log(i);
+        console.log("getting query");
+        let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch((err: any) =>
+            console.log(err)
+        );
+        censusResults = censusResults.concat(result.data.response);
+    }
+    return censusResults;
+}
+
+function parseCensusResults(censusResults: any, tableData: any) {
+    let newTable: any[] = [];
+    censusResults.forEach((census_data: any, index: number) => {
+        // console.log(tableData[index])
+        let row = add_census_data_to_row(tableData[index], census_data, index);
+        newTable.push(row);
+    });
+    return newTable;
+}
+
+export { add_census_data_to_row, writeGeocodeToTable, getCensusData, parseCensusResults };

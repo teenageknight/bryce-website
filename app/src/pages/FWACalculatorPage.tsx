@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer } from "react";
 
-import { validateAddress, getCensusDataQuery } from "../services/functions";
-import { add_census_data_to_row } from "../utils/census";
+import { validateAddress } from "../services/functions";
+import { writeGeocodeToTable, getCensusData, parseCensusResults } from "../utils/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
@@ -11,7 +11,6 @@ type status =
     | "validating-addresses"
     | "addresses-validated"
     | "submitted"
-    | "getting-geocode"
     | "parsing-geocode"
     | "getting-census"
     | "parsing-census"
@@ -23,6 +22,7 @@ type FormState = {
     addressStatus: string[]; // This might become an enum or something else later
     status: string;
     geocodeResults: any[];
+    tableData: any[];
 };
 
 enum AddressStatus {
@@ -32,14 +32,8 @@ enum AddressStatus {
 }
 
 export function FWACalculatorPage() {
-    const [submitted, setSubmitted] = React.useState<boolean>(false);
     const [invalidAddresses, setInvalidAddresses] = React.useState<string[] | undefined>([]);
-    const [geocodeResults, setGeocodeResults] = React.useState<any[] | undefined>([]);
-    const [censusResults, setCensusResults] = React.useState<any[] | undefined>([]);
-    const [parsedGeocodeResults, setParsedGeocodeResults] = React.useState<boolean | undefined>(false);
     const [tableData, setTableData] = React.useState<any[] | undefined>([]);
-    const [addresses, setAddresses] = React.useState<string[] | undefined>([]);
-    const [status, setStatus] = React.useState<status | undefined>("");
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
     const initialFormState: FormState = {
@@ -48,10 +42,16 @@ export function FWACalculatorPage() {
         addressStatus: [],
         status: "",
         geocodeResults: [],
+        tableData: [],
     };
 
     function formReducer(state: FormState, action: any): FormState {
         switch (action.type) {
+            case "update_status":
+                return {
+                    ...state,
+                    status: action.payload,
+                };
             case "update_current_address_line":
                 return {
                     ...state,
@@ -66,23 +66,38 @@ export function FWACalculatorPage() {
             case "update_address_status_pending":
                 return {
                     ...state,
-                    addressStatus: action.payload,
+                    addressStatus: action.payload.status,
+                    geocodeResults: action.payload.geocodeResults,
                     status: "validating-addresses",
                 };
             case "update_address_status_done":
                 return {
                     ...state,
-                    addressStatus: action.payload,
+                    addressStatus: action.payload.status,
                     // TODO: Add the geocode results to the state
+                    geocodeResults: action.payload.geocodeResults,
                     status: "addresses-validated",
                 };
+            case "form_submitted_success":
+                return {
+                    ...state,
+                    status: "done",
+                    tableData: action.payload,
+                };
+            case "form_submitted_failure":
+                return {
+                    ...state,
+                    status: "error",
+                };
+            case "reset":
+                return initialFormState;
             default:
                 return state;
         }
     }
 
     const [formState, formDispatch] = useReducer(formReducer, initialFormState);
-
+    console.log(formState);
     const handeAddressInputChange = (e: any) => {
         let lines = e.target.value.split("\n");
         if (lines.length > 1) {
@@ -95,32 +110,47 @@ export function FWACalculatorPage() {
         }
     };
 
+    /*
+        This use effect is specifically for resizing the arrays any time the addresses change. Since its javascript, technically
+        we dont have to do this, but idk, it made sense to me.
+    */
     useEffect(() => {
         // If the lengths are diffrent, then we need to update the address status
         if (formState.addresses.length !== formState.addressStatus.length) {
             // Lazy load the address status and if it valid or not
-            let addressStatus = new Array(formState.addresses.length).fill(AddressStatus.Pending) as string[];
-            formDispatch({ type: "update_address_status_pending", payload: addressStatus });
+            let newAddressStatus = new Array(formState.addresses.length - formState.addressStatus.length).fill(
+                AddressStatus.Pending
+            ) as string[];
+            let addressStatus = [...formState.addressStatus, ...newAddressStatus];
+
+            // Resize the geocode results array to the same length as the address status array
+            let newGeocodeResults = new Array(formState.addresses.length - formState.geocodeResults.length).fill(
+                "Loading..."
+            ) as string[];
+            let geocodeResults = [...formState.geocodeResults, ...newGeocodeResults];
+
+            formDispatch({
+                type: "update_address_status_pending",
+                payload: { status: addressStatus, geocodeResults: geocodeResults },
+            });
             return;
         }
     }, [formState.addresses, formState.addressStatus]);
 
     useEffect(() => {
+        // TODO: Clean this up and make it more readable
         const doWork = async () => {
-            console.log("doing work");
             let numPending = 0;
             let indexes = [];
             let chunked_addresses: string[] = [];
             let promises: Promise<any>[] = [];
             for (let i = 0; i < formState.addresses.length; i++) {
                 if (formState.addressStatus[i] === AddressStatus.Pending) {
-                    console.log("pushing");
                     chunked_addresses.push(formState.addresses[i]);
                     indexes.push(i);
                     numPending++;
                 }
                 if (chunked_addresses.length === 20) {
-                    console.log("chunked");
                     let promise = validateAddress({ addresses: chunked_addresses });
                     promises.push(promise);
                     chunked_addresses = [];
@@ -134,7 +164,6 @@ export function FWACalculatorPage() {
 
             await Promise.all(promises);
             const results = await Promise.all(promises);
-            console.log("results", results);
             let resultsFormatted: { addresses: string[]; invalid_addresses: string[]; valid_addresses: string[] } = {
                 addresses: [],
                 invalid_addresses: [],
@@ -149,15 +178,23 @@ export function FWACalculatorPage() {
             });
 
             let tempStatus = [...formState.addressStatus];
+            let tempGeocodeResults = [...formState.geocodeResults];
             for (let i = 0; i < indexes.length; i++) {
                 if (resultsFormatted.invalid_addresses.includes(formState.addresses[indexes[i]])) {
                     tempStatus[indexes[i]] = AddressStatus.Invalid;
+                    // NOTE: This is a way to keep track of the index of the geocoding results
+                    tempGeocodeResults[indexes[i]] = AddressStatus.Invalid;
                 } else {
                     tempStatus[indexes[i]] = AddressStatus.Valid;
+                    tempGeocodeResults[indexes[i]] = resultsFormatted.addresses[indexes[i]];
                 }
             }
+            console.log("test");
 
-            formDispatch({ type: "update_address_status_done", payload: tempStatus });
+            formDispatch({
+                type: "update_address_status_done",
+                payload: { status: tempStatus, geocodeResults: resultsFormatted.addresses },
+            });
         };
 
         if (formState.status === "validating-addresses") {
@@ -166,146 +203,33 @@ export function FWACalculatorPage() {
     }, [formState.status]);
 
     const handleSubmit = async () => {
-        setStatus("submitted");
-        let all_addresses = addressInput?.split("\n") || [];
-        let geocode_results: any[] = [];
-        let valid_addresses: string[] = [];
-        let invalid_addresses: string[] = [];
+        // 1. Write the geocoding data to a table {}
+        formDispatch({ type: "update_status", payload: "parsing-geocode" });
+        // FIXME: This will break if there are any invalid addresses, we need to handle that before this step!!!
+        let table = writeGeocodeToTable(formState.geocodeResults);
 
-        if (all_addresses.length === 0) {
+        // 2. Query the census data
+        formDispatch({ type: "update_status", payload: "getting-census" });
+        let censusResults: any[] = [];
+        try {
+            censusResults = await getCensusData(table);
+        } catch (error) {
+            console.log(error);
+            formDispatch({ type: "form_submitted_failure", payload: "error" });
             return;
         }
 
-        setStatus("getting-geocode");
-        setProgress(20);
-        // Chuck the responses in groups of 20, an arbitrary number that should keep runtimes low and show progress.
-        for (let i = 0; i < all_addresses.length / 20; i++) {
-            try {
-                var chunked_addresses = all_addresses.slice(
-                    i * 20, // Starting at the index of the current chunk
-                    i * 20 + 20 // Going to the index plus 20, if it is greater than the length of the array, it will just go to the end.
-                );
-                let result = await validateAddress({ addresses: chunked_addresses });
-                let data: any = result.data;
-                let response_addrs: any[] = data.addresses;
-                let invalidAddresses: any[] = data.invalid_addresses;
-                let validAddresses: any[] = data.valid_addresses;
+        // 3. Parse the census data to the table
+        formDispatch({ type: "update_status", payload: "parsing-census" });
+        table = parseCensusResults(censusResults, table);
 
-                console.log("response_addrs", response_addrs);
-                console.log("errors", invalid_addresses);
-                console.log("data", data);
-
-                invalid_addresses = invalid_addresses.concat(invalidAddresses);
-                valid_addresses = valid_addresses.concat(validAddresses);
-                geocode_results = geocode_results.concat(response_addrs);
-            } catch (err) {
-                console.log(err);
-                alert("Something went wrong. Please try again.");
-            }
-
-            let tempProgressPercent = i + 1 / (all_addresses.length / 20) > 1 ? 1 : i + 1 / (all_addresses.length / 20);
-            setProgress(20 + tempProgressPercent * 40);
-        }
-        setInvalidAddresses(invalid_addresses);
-        setAddresses(valid_addresses);
-        setGeocodeResults(geocode_results);
-        setSubmitted(true);
+        // 4. Download the table
+        formDispatch({ type: "form_submitted_success", payload: table });
     };
 
     const handleReset = () => {
-        setAddressInput("");
-        setInvalidAddresses([]);
-        setGeocodeResults([]);
-        setCensusResults([]);
-        setParsedGeocodeResults(false);
-        setTableData([]);
-        setAddresses([]);
-        setStatus("");
-        setProgress(0);
-        setSubmitted(false);
+        formDispatch({ type: "reset" });
     };
-
-    React.useEffect(() => {
-        function writeGeocodeToTable(geocodeResults: any) {
-            setStatus("parsing-geocode");
-            let table: any[] = [];
-            geocodeResults.forEach((geocoding_data: any) => {
-                // This is where the table data will be written to the table for the first time.
-                var row: any = {};
-                row["address"] = geocoding_data.formatted_address;
-                row["state"] = geocoding_data.state;
-                row["state_code"] = geocoding_data.state_code;
-                row["city"] = geocoding_data.city;
-                row["zip_code"] = geocoding_data.zip_code;
-                row["county"] = geocoding_data.county;
-                row["county_code"] = geocoding_data.county_code;
-                row["tract"] = geocoding_data.tract;
-                row["tract_code"] = geocoding_data.tract_code;
-                row["block_group"] = geocoding_data.block_group;
-
-                table.push(row);
-                setParsedGeocodeResults(true);
-            });
-            setTableData(table);
-        }
-        if (geocodeResults && geocodeResults.length > 0 && !parsedGeocodeResults) {
-            writeGeocodeToTable(geocodeResults);
-        }
-    }, [geocodeResults, parsedGeocodeResults, invalidAddresses, addresses]);
-
-    React.useEffect(() => {
-        async function getCensusData(tableData: any) {
-            setStatus("getting-census");
-            setProgress(65);
-            // Same thing as geocode, chunk in groups of 20, update progress bar accordingly, both to limit runtime and show progress.
-            // Could consider in the future running the code in sync, but that would be a lot of requests.
-            let censusResults: any[] = [];
-
-            for (let i = 0; i < tableData.length / 20; i++) {
-                console.log(i);
-                console.log("getting query");
-                let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch(
-                    (err: any) => console.log(err)
-                );
-                let tempProgressPercent = i + 1 / (tableData.length / 20) > 1 ? 1 : i + 1 / (tableData.length / 20);
-                setProgress(65 + tempProgressPercent * 30);
-                censusResults = censusResults.concat(result.data.response);
-            }
-            setCensusResults(censusResults);
-        }
-
-        if (parsedGeocodeResults && censusResults && censusResults.length === 0) {
-            getCensusData(tableData);
-        }
-    }, [censusResults, parsedGeocodeResults, tableData]);
-
-    React.useEffect(() => {
-        function parseCensusResults(censusResults: any, tableData: any) {
-            setStatus("parsing-census");
-            let newTable: any[] = [];
-            censusResults.forEach((census_data: any, index: number) => {
-                // console.log(tableData[index])
-                let row = add_census_data_to_row(tableData[index], census_data, index);
-                newTable.push(row);
-            });
-            setTableData(newTable);
-            setStatus("done");
-        }
-        if (censusResults && censusResults.length > 0 && tableData && status !== "done") {
-            // console.log("censusResults", censusResults);
-            parseCensusResults(censusResults, tableData);
-        }
-    }, [censusResults, status, tableData]);
-
-    React.useEffect(() => {
-        if (status === "parsing-geocode") {
-            setProgress(60);
-        } else if (status === "parsing-census") {
-            setProgress(95);
-        } else if (status === "done") {
-            setProgress(100);
-        }
-    }, [status]);
 
     return (
         <div className="px-10" style={{ marginTop: "10px" }}>
@@ -315,7 +239,7 @@ export function FWACalculatorPage() {
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
-            {submitted && (
+            {formState.status !== "" && (
                 <div>
                     <Button
                         variant="secondary"
@@ -355,21 +279,10 @@ export function FWACalculatorPage() {
                         <p>Plus button to add</p>
                     </div>
                 </div>
-                {/* <Form.Label style={{ width: "100%", fontSize: 20 }}>
-                    Addresses: <br />
-                    <Form.Control
-                        as={"textarea"}
-                        value={addressInput}
-                        style={{ height: "200px", width: "60%", color: "black" }}
-                        onChange={event => {
-                            setAddressInput(event.target.value);
-                        }}
-                    />
-                </Form.Label> */}
             </div>
             <Button
                 variant="primary"
-                disabled={true}
+                disabled={formState.status !== "addresses-validated"}
                 onClick={_ => {
                     handleSubmit();
                 }}>
@@ -381,7 +294,7 @@ export function FWACalculatorPage() {
                 <ProgressBar now={progress} />
             </div>
 
-            <div>Number of Valid Addresses: {addresses?.length}</div>
+            <div>Number of Valid Addresses: {formState.addresses?.length}</div>
             <div>Number of Invalid Addresses: {invalidAddresses?.length}</div>
             {invalidAddresses && invalidAddresses?.length > 0 && (
                 <>
