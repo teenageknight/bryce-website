@@ -1,4 +1,4 @@
-import { getCensusDataQuery } from "../services/functions";
+import { getCensusDataQuery } from "../../services/functions";
 
 export function createObject(arr1: any[], arr2: any[]) {
     if (arr1.length !== arr2.length) {

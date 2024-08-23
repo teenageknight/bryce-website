@@ -1,29 +1,13 @@
 import React, { useEffect, useReducer } from "react";
 
 import { validateAddress } from "../services/functions";
-import { writeGeocodeToTable, getCensusData, parseCensusResults } from "../utils/census";
+import { writeGeocodeToTable, getCensusData, parseCensusResults } from "../utils/census/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
+import { AddressInputGrid } from "../components/input-grid/Address-Input-Grid";
 
-type status =
-    | ""
-    | "validating-addresses"
-    | "addresses-validated"
-    | "submitted"
-    | "parsing-geocode"
-    | "getting-census"
-    | "parsing-census"
-    | "done";
-
-type FormState = {
-    currentAddressLine: string;
-    addresses: string[];
-    addressStatus: string[]; // This might become an enum or something else later
-    status: string;
-    geocodeResults: any[];
-    tableData: any[];
-};
+import type { FormState, status } from "../utils/census/census-types";
 
 enum AddressStatus {
     Pending = "Pending",
@@ -97,8 +81,8 @@ export function FWACalculatorPage() {
     }
 
     const [formState, formDispatch] = useReducer(formReducer, initialFormState);
-    console.log(formState);
-    const handeAddressInputChange = (e: any) => {
+
+    const handleAddressInputChange = (e: any) => {
         let lines = e.target.value.split("\n");
         if (lines.length > 1) {
             formDispatch({
@@ -250,35 +234,8 @@ export function FWACalculatorPage() {
                     </Button>
                 </div>
             )}
-            <div style={{ display: "flex", width: "100%" }}>
-                <div>
-                    {/* Title */}
-                    <h2>Addresses</h2>
-                    {/* Render all of the addressses input so far */}
-                    {/* TODO: Add this functionality */}
-                    {/* Render the input field */}
-                    {formState.addresses.map((address: string, index: number) => (
-                        // FIXME: This will need to have some additional logic to determine if the address is valid or not and what is focused on.
-                        <div key={index}>
-                            <div className="flex flex-row">
-                                <p>{index + 1}.</p>
-                                <p>{address}</p>
-                                <p>{formState.addressStatus[index]}</p>
-                            </div>
-                        </div>
-                    ))}
-                    {/* Input Row */}
-                    <div className="flex flex-row">
-                        <textarea
-                            rows={1}
-                            placeholder="Address"
-                            value={formState.currentAddressLine}
-                            onChange={e => handeAddressInputChange(e)}
-                            onKeyDown={e => e.key === "Enter"}
-                        />
-                        <p>Plus button to add</p>
-                    </div>
-                </div>
+            <div>
+                <AddressInputGrid formState={formState} handleAddressInputChange={handleAddressInputChange} />
             </div>
             <Button
                 variant="primary"
@@ -308,7 +265,7 @@ export function FWACalculatorPage() {
                 </>
             )}
             <div style={{ marginTop: 20 }}>
-                {status === "done" && <ExportExcel excelData={tableData} fileName={"output"} />}
+                {formState.status === "done" && <ExportExcel excelData={formState.tableData} fileName={"output"} />}
             </div>
             <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
         </div>
