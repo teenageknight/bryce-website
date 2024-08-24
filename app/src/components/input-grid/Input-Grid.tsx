@@ -10,13 +10,19 @@ interface InputGridProps {
     children?: ReactNode;
 }
 
-// TODO: Add in types for the props
 const Row: React.FC<RowProps> = p => {
     const { children } = p;
     return (
-        <div className="flex flex-row border p-3 " style={{ ...(p.header && { fontWeight: "bold" }) }}>
-            {children?.map((child, index) => (
-                <div className="flex-grow h-4" style={{ width: "33%" }}>
+        <div className="flex flex-row h-10" style={{ ...(p.header && { fontWeight: "bold" }) }}>
+            {children?.map((child, i) => (
+                <div
+                    className="px-2 flex-grow h-full flex justify-center items-center"
+                    style={{
+                        width: "33%",
+                        borderLeftWidth: i == 0 ? "0px" : "1px",
+                        borderBottomWidth: "2px",
+                        borderColor: "#8D96A0",
+                    }}>
                     {child}
                 </div>
             ))}
@@ -29,7 +35,9 @@ const InputGrid: React.FC<InputGridProps> & { Row: React.FC<RowProps> } = p => {
 
     return (
         <>
-            <div className="flex-col bg-[#282c34]">{Array.isArray(children) ? children : [children]}</div>
+            <div className="flex-col border rounded bg-[#282c34] py-3">
+                {Array.isArray(children) ? children : [children]}
+            </div>
         </>
     );
 };

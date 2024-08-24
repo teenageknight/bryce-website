@@ -7,7 +7,7 @@ import { Button } from "../components/button/Button";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
 import { AddressInputGrid } from "../components/input-grid/Address-Input-Grid";
 
-import type { FormState, status } from "../utils/census/census-types";
+import type { FormState } from "../utils/census/census-types";
 
 enum AddressStatus {
     Pending = "Pending",
@@ -17,7 +17,6 @@ enum AddressStatus {
 
 export function FWACalculatorPage() {
     const [invalidAddresses, setInvalidAddresses] = React.useState<string[] | undefined>([]);
-    const [tableData, setTableData] = React.useState<any[] | undefined>([]);
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
     const initialFormState: FormState = {

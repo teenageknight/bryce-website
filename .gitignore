@@ -30,3 +30,5 @@ firebase-debug.log
 .github/workflows/deploy-github-pages.yml
 
 coverage/
+
+app/src/output.css
