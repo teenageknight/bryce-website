@@ -5,6 +5,7 @@ type FormState = {
     status: string;
     geocodeResults: any[];
     tableData: any[];
+    tableDataFormatted: any[][];
 };
 
 type status =

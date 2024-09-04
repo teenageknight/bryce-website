@@ -208,4 +208,28 @@ function parseCensusResults(censusResults: any, tableData: any) {
     return newTable;
 }
 
-export { add_census_data_to_row, writeGeocodeToTable, getCensusData, parseCensusResults };
+function formatTableDataForXLSX(tableData: any[]) {
+    let newTable: any[][] = [];
+
+    let headerRow: any[] = [];
+    Object.keys(tableData[0]).forEach((key: string) => {
+        headerRow.push({ t: "s", v: key });
+    });
+    newTable.push(headerRow);
+
+    tableData.forEach((row: any) => {
+        let newRow: any[] = [];
+        Object.keys(row).forEach((key: string) => {
+            console.log(row[key]);
+            if (typeof row[key] === "string" && row[key].startsWith("=")) {
+                newRow.push({ t: "n", f: row[key].slice(1) });
+            } else {
+                newRow.push(row[key]);
+            }
+        });
+        newTable.push(newRow);
+    });
+    return newTable;
+}
+
+export { add_census_data_to_row, writeGeocodeToTable, getCensusData, parseCensusResults, formatTableDataForXLSX };

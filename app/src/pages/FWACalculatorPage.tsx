@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer } from "react";
 
 import { validateAddress } from "../services/functions";
-import { writeGeocodeToTable, getCensusData, parseCensusResults } from "../utils/census/census";
+import { writeGeocodeToTable, getCensusData, parseCensusResults, formatTableDataForXLSX } from "../utils/census/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
@@ -25,6 +25,7 @@ export function FWACalculatorPage() {
         status: "",
         geocodeResults: [],
         tableData: [],
+        tableDataFormatted: [],
     };
 
     function formReducer(state: FormState, action: any): FormState {
@@ -65,6 +66,11 @@ export function FWACalculatorPage() {
                     ...state,
                     status: "done",
                     tableData: action.payload,
+                };
+            case "update_table_data_formatted":
+                return {
+                    ...state,
+                    tableDataFormatted: action.payload,
                 };
             case "form_submitted_failure":
                 return {
@@ -187,6 +193,18 @@ export function FWACalculatorPage() {
             doWork();
         }
     }, [formState.status]);
+
+    /*
+        This is literally just to format all the table data into an array of arrays so that it can be exported to excel.
+        We could probably do this in the parseCensusResults function, but I dont want to refactor the whole thing just
+        for this one function.
+    */
+    useEffect(() => {
+        if (formState.tableData.length > 0) {
+            formDispatch({ type: "update_table_data_formatted", payload: formatTableDataForXLSX(formState.tableData) });
+        }
+    }, [formState.tableData]);
+
     console.log(formState);
     const handleSubmit = async () => {
         // 1. Write the geocoding data to a table {}
@@ -257,7 +275,9 @@ export function FWACalculatorPage() {
             </div>
 
             <div style={{ marginTop: 20 }}>
-                {formState.status === "done" && <ExportExcel excelData={formState.tableData} fileName={"output"} />}
+                {formState.status === "done" && (
+                    <ExportExcel excelData={formState.tableDataFormatted} fileName={"output"} />
+                )}
             </div>
             <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
         </div>

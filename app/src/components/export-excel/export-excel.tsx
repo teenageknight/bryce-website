@@ -7,7 +7,7 @@ import { Button } from "../button/Button";
 // https://docs.sheetjs.com/docs/
 
 type ExcelDataProps = {
-    excelData: any;
+    excelData: any[][];
     fileName: string;
 };
 
@@ -19,7 +19,12 @@ const ExportExcel: React.FC<ExcelDataProps> = p => {
     const fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
     const fileExtension = ".xlsx";
     const exportToExcel = async (fileName: string) => {
-        const ws = XLSX.utils.json_to_sheet(excelData);
+        // const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // The excelData needs to be entered as an array of arrays
+        // The main reason for this is so we can leverage the formula features of excel
+        // and not encode everything as text. see https://docs.sheetjs.com/docs/csf/features/formulae
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
         const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
         const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
