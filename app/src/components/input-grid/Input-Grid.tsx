@@ -16,6 +16,7 @@ const Row: React.FC<RowProps> = p => {
         <div className="flex flex-row h-10" style={{ ...(p.header && { fontWeight: "bold" }) }}>
             {children?.map((child, i) => (
                 <div
+                    key={i}
                     className="px-2 flex-grow h-full flex justify-center items-center"
                     style={{
                         width: "33%",

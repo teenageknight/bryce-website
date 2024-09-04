@@ -3,6 +3,9 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { Button } from "../button/Button";
 
+// Documentation for XLSX
+// https://docs.sheetjs.com/docs/
+
 type ExcelDataProps = {
     excelData: any;
     fileName: string;
@@ -19,6 +22,8 @@ const ExportExcel: React.FC<ExcelDataProps> = p => {
         const ws = XLSX.utils.json_to_sheet(excelData);
         const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
         const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+        // Export the file to save it
         const data = new Blob([excelBuffer], { type: fileType });
         saveAs(data, fileName + fileExtension);
     };

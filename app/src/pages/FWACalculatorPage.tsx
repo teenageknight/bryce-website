@@ -16,7 +16,6 @@ enum AddressStatus {
 }
 
 export function FWACalculatorPage() {
-    const [invalidAddresses, setInvalidAddresses] = React.useState<string[] | undefined>([]);
     const [progress, setProgress] = React.useState<number | undefined>(0);
 
     const initialFormState: FormState = {
@@ -80,6 +79,7 @@ export function FWACalculatorPage() {
     }
 
     const [formState, formDispatch] = useReducer(formReducer, initialFormState);
+    console.log(formState);
 
     const handleAddressInputChange = (e: any) => {
         let lines = e.target.value.split("\n");
@@ -152,6 +152,7 @@ export function FWACalculatorPage() {
                 invalid_addresses: [],
                 valid_addresses: [],
             };
+
             results.forEach((result: any) => {
                 resultsFormatted.addresses = resultsFormatted.addresses.concat(result.data.addresses);
                 resultsFormatted.invalid_addresses = resultsFormatted.invalid_addresses.concat(
@@ -160,6 +161,9 @@ export function FWACalculatorPage() {
                 resultsFormatted.valid_addresses = resultsFormatted.valid_addresses.concat(result.data.validAddresses);
             });
 
+            console.log(resultsFormatted);
+
+            console.log(indexes);
             let tempStatus = [...formState.addressStatus];
             let tempGeocodeResults = [...formState.geocodeResults];
             for (let i = 0; i < indexes.length; i++) {
@@ -169,14 +173,13 @@ export function FWACalculatorPage() {
                     tempGeocodeResults[indexes[i]] = AddressStatus.Invalid;
                 } else {
                     tempStatus[indexes[i]] = AddressStatus.Valid;
-                    tempGeocodeResults[indexes[i]] = resultsFormatted.addresses[indexes[i]];
+                    tempGeocodeResults[indexes[i]] = resultsFormatted.addresses[i];
                 }
             }
-            console.log("test");
 
             formDispatch({
                 type: "update_address_status_done",
-                payload: { status: tempStatus, geocodeResults: resultsFormatted.addresses },
+                payload: { status: tempStatus, geocodeResults: tempGeocodeResults },
             });
         };
 
@@ -184,7 +187,7 @@ export function FWACalculatorPage() {
             doWork();
         }
     }, [formState.status]);
-
+    console.log(formState);
     const handleSubmit = async () => {
         // 1. Write the geocoding data to a table {}
         formDispatch({ type: "update_status", payload: "parsing-geocode" });
@@ -195,7 +198,7 @@ export function FWACalculatorPage() {
         formDispatch({ type: "update_status", payload: "getting-census" });
         let censusResults: any[] = [];
         try {
-            censusResults = await getCensusData(table);
+            censusResults = await getCensusData(table, setProgress);
         } catch (error) {
             console.log(error);
             formDispatch({ type: "form_submitted_failure", payload: "error" });
@@ -222,47 +225,37 @@ export function FWACalculatorPage() {
                 This calculator tool will help automate the process of finding and reporting census data surrounding the
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
-            {formState.status !== "" && (
-                <div>
-                    <Button
-                        variant="secondary"
-                        onClick={() => {
-                            handleReset();
-                        }}>
-                        Reset Form
-                    </Button>
-                </div>
-            )}
-            <div>
-                <AddressInputGrid formState={formState} handleAddressInputChange={handleAddressInputChange} />
+
+            <AddressInputGrid formState={formState} handleAddressInputChange={handleAddressInputChange} />
+
+            <div className="flex flex-row m-3">
+                {formState.status !== "" && (
+                    <div>
+                        <Button
+                            variant="warning"
+                            onClick={() => {
+                                handleReset();
+                            }}>
+                            Reset Form
+                        </Button>
+                    </div>
+                )}
+                <Button
+                    variant="primary"
+                    disabled={formState.status !== "addresses-validated"}
+                    className="mx-5"
+                    onClick={_ => {
+                        handleSubmit();
+                    }}>
+                    Submit
+                </Button>
             </div>
-            <Button
-                variant="primary"
-                disabled={formState.status !== "addresses-validated"}
-                onClick={_ => {
-                    handleSubmit();
-                }}>
-                Submit
-            </Button>
 
             <div style={{ marginTop: 15, marginBottom: 15 }}>
-                <div>Status: {status === "" ? "Waiting..." : status}</div>
+                <div>Status: {formState.status === "" ? "Waiting..." : formState.status}</div>
                 <ProgressBar now={progress} />
             </div>
 
-            <div>Number of Valid Addresses: {formState.addresses?.length}</div>
-            <div>Number of Invalid Addresses: {invalidAddresses?.length}</div>
-            {invalidAddresses && invalidAddresses?.length > 0 && (
-                <>
-                    <div>
-                        The following Addresses are invalid. Please use an address nearby to fix this issue and try
-                        again.
-                    </div>
-                    {invalidAddresses?.map((address: string, index: number) => (
-                        <div key={index}>{address}</div>
-                    ))}
-                </>
-            )}
             <div style={{ marginTop: 20 }}>
                 {formState.status === "done" && <ExportExcel excelData={formState.tableData} fileName={"output"} />}
             </div>

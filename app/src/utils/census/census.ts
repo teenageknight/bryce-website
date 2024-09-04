@@ -1,5 +1,11 @@
 import { getCensusDataQuery } from "../../services/functions";
 
+enum AddressStatus {
+    Pending = "Pending",
+    Valid = "Valid",
+    Invalid = "Invalid",
+}
+
 export function createObject(arr1: any[], arr2: any[]) {
     if (arr1.length !== arr2.length) {
         throw new Error("Arrays must have the same length");
@@ -149,25 +155,30 @@ function add_census_data_to_row(row: any, census_data: any[], index: number) {
 function writeGeocodeToTable(geocodeResults: any) {
     let table: any[] = [];
     geocodeResults.forEach((geocoding_data: any) => {
-        // This is where the table data will be written to the table for the first time.
-        var row: any = {};
-        row["address"] = geocoding_data.formatted_address;
-        row["state"] = geocoding_data.state;
-        row["state_code"] = geocoding_data.state_code;
-        row["city"] = geocoding_data.city;
-        row["zip_code"] = geocoding_data.zip_code;
-        row["county"] = geocoding_data.county;
-        row["county_code"] = geocoding_data.county_code;
-        row["tract"] = geocoding_data.tract;
-        row["tract_code"] = geocoding_data.tract_code;
-        row["block_group"] = geocoding_data.block_group;
+        // Low key I think that the second condition is the only one that matters, but ill check it later.
+        console.log(geocoding_data);
+        if (geocoding_data !== AddressStatus.Invalid || geocoding_data !== undefined) {
+            console.log(geocoding_data);
+            // This is where the table data will be written to the table for the first time.
+            var row: any = {};
+            row["address"] = geocoding_data.formatted_address;
+            row["state"] = geocoding_data.state;
+            row["state_code"] = geocoding_data.state_code;
+            row["city"] = geocoding_data.city;
+            row["zip_code"] = geocoding_data.zip_code;
+            row["county"] = geocoding_data.county;
+            row["county_code"] = geocoding_data.county_code;
+            row["tract"] = geocoding_data.tract;
+            row["tract_code"] = geocoding_data.tract_code;
+            row["block_group"] = geocoding_data.block_group;
 
-        table.push(row);
+            table.push(row);
+        }
     });
     return table;
 }
 
-async function getCensusData(tableData: any) {
+async function getCensusData(tableData: any, setProgress: React.Dispatch<React.SetStateAction<number | undefined>>) {
     // Same thing as geocode, chunk in groups of 20, update progress bar accordingly, both to limit runtime and show progress.
     // Could consider in the future running the code in sync, but that would be a lot of requests.
     let censusResults: any[] = [];
@@ -178,6 +189,10 @@ async function getCensusData(tableData: any) {
         let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch((err: any) =>
             console.log(err)
         );
+        console.log(tableData.length);
+
+        setProgress(((i + 1) / Math.ceil(tableData.length / 20)) * 100);
+
         censusResults = censusResults.concat(result.data.response);
     }
     return censusResults;
