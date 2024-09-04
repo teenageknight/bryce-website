@@ -1,0 +1,8 @@
+name: Deploy Firebase Hosting
+on:
+    workflow_call:
+jobs:
+    deploy-firebase-hosting:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo 'hello world'

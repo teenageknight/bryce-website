@@ -9,6 +9,9 @@ on:
 jobs:
     run-ci:
         uses: ./.github/workflows/CI.yml
-    deploy-firebase-functions:
+    # deploy-firebase-functions:
+    #     needs: run-ci
+    #     uses: ./.github/workflows/Deploy-Firebase-Functions.yml
+    deploy-firebase-hosting:
         needs: run-ci
-        uses: ./.github/workflows/Deploy-Firebase-Functions.yml
+        uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
