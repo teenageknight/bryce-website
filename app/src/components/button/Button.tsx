@@ -1,10 +1,10 @@
 import React from "react";
 
-enum ButtonVariant {
-    Primary = "primary",
-    Disabled = "disabled",
-    Warning = "warning",
-}
+// enum ButtonVariant {
+//     Primary = "primary",
+//     Disabled = "disabled",
+//     Warning = "warning",
+// }
 
 type ButtonProps = {
     onClick: (value: any) => void;
@@ -22,6 +22,7 @@ const variantStyles = {
 
 const Button: React.FC<ButtonProps> = p => {
     const { onClick, disabled, className, variant, children } = p;
+    console.log(variant);
 
     return (
         <button

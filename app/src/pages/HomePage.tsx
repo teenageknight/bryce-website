@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { BACKGROUND_COLOR } from "../styles/consts";
 import Markdown from "react-markdown";
 import aboutme from "../assets/markdown/aboutme.md?raw";
@@ -9,7 +9,7 @@ import { PortfolioCard } from "../components/portfolio-card/portfolio-card";
 //       cannot render dynamic colors.
 // TODO: Dynamically pull this information from Github using a token
 export function HomePage() {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     return (
         <div className={`h-full`} style={{ backgroundColor: `${BACKGROUND_COLOR}` }}>

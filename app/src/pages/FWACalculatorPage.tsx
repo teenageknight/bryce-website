@@ -85,7 +85,6 @@ export function FWACalculatorPage() {
     }
 
     const [formState, formDispatch] = useReducer(formReducer, initialFormState);
-    console.log(formState);
 
     const handleAddressInputChange = (e: any) => {
         let lines = e.target.value.split("\n");
@@ -167,9 +166,6 @@ export function FWACalculatorPage() {
                 resultsFormatted.valid_addresses = resultsFormatted.valid_addresses.concat(result.data.validAddresses);
             });
 
-            console.log(resultsFormatted);
-
-            console.log(indexes);
             let tempStatus = [...formState.addressStatus];
             let tempGeocodeResults = [...formState.geocodeResults];
             for (let i = 0; i < indexes.length; i++) {
@@ -205,7 +201,6 @@ export function FWACalculatorPage() {
         }
     }, [formState.tableData]);
 
-    console.log(formState);
     const handleSubmit = async () => {
         // 1. Write the geocoding data to a table {}
         formDispatch({ type: "update_status", payload: "parsing-geocode" });

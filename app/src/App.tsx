@@ -6,6 +6,7 @@ import { HomePage } from "./pages/HomePage";
 import { AboutPage } from "./pages/AboutPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { FWACalculatorPage } from "./pages/FWACalculatorPage";
+import { FWADataProjectPage } from "./pages/FWADataProject";
 
 function App() {
     return (

@@ -220,7 +220,6 @@ function formatTableDataForXLSX(tableData: any[]) {
     tableData.forEach((row: any) => {
         let newRow: any[] = [];
         Object.keys(row).forEach((key: string) => {
-            console.log(row[key]);
             if (typeof row[key] === "string" && row[key].startsWith("=")) {
                 newRow.push({ t: "n", f: row[key].slice(1) });
             } else {

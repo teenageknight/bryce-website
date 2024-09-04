@@ -35,7 +35,7 @@ const ExportExcel: React.FC<ExcelDataProps> = p => {
 
     return (
         <>
-            <Button variant="success" onClick={e => exportToExcel(fileName)}>
+            <Button variant="primary" onClick={_ => exportToExcel(fileName)}>
                 Export to Excel
             </Button>
         </>
