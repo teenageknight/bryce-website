@@ -17,6 +17,7 @@ function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 {/* This whole path will eventually need to be a project subroute. */}
                 <Route path="/fwa-census-calculator" element={<FWACalculatorPage />} />
+                <Route path="/fwa-data-project" element={<FWADataProjectPage />} />
                 {/* TODO: Make a funny page */}
                 <Route path="*" element={<p>No Page</p>} />
             </Routes>
