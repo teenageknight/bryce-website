@@ -11,7 +11,7 @@ jobs:
         uses: ./.github/workflows/CI.yml
     # deploy-firebase-functions:
     #     needs: run-ci
-    #     uses: ./.github/workflows/Deploy-Firebase-Functions.yml
+    #     uses: ./.github/workflows/Deploy-Firebase-Function.yml
     deploy-firebase-hosting:
         needs: run-ci
         uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
