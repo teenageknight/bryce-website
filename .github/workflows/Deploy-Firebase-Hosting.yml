@@ -1,10 +1,6 @@
 name: Deploy to Firebase Hosting
 on:
     workflow_call:
-permissions:
-    checks: write
-    contents: read
-    pull-requests: write
 jobs:
     build_and_preview:
         runs-on: ubuntu-latest
