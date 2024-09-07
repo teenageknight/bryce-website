@@ -1,9 +1,6 @@
 on:
     workflow_call:
-        inputs:
-            config-path:
-                required: true
-                type: string
+
 jobs:
     deploy-firebase-functions:
         runs-on: ubuntu-latest
