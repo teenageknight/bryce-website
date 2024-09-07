@@ -14,6 +14,6 @@ jobs:
             - name: Build
               run: cd functions/ && npm run build
             - name: Deploy
-              run: cd functions/ && npx firebase-tools deploy --only functions
+              run: cd functions/ && npx firebase-tools use prod && npx firebase-tools deploy --only functions
               env:
                   FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
