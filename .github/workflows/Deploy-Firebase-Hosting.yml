@@ -13,11 +13,6 @@ jobs:
               run: cd app/ && npm install
             - name: Build
               run: cd app/ && npm run build
-            - name: Check if Secret Exists
-              env:
-                  super_secret: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-              if: env.super_secret == ''
-              run: echo "No secret found"
             - uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: ${{ secrets.GITHUB_TOKEN }}
