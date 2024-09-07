@@ -16,3 +16,7 @@ jobs:
         needs: run-ci
         uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
         secrets: inherit
+    # deploy-firebase-functions:
+    #     needs: run-ci
+    #     uses: ./.github/workflows/Deploy-Firebase-Function.yml
+    #     secrets: inherit
