@@ -2,13 +2,21 @@ name: CD
 on:
     push:
         branches:
-            - vite-port
+            - dev
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
 jobs:
     run-ci:
         uses: ./.github/workflows/CI.yml
+    # deploy-firebase-functions:
+    #     needs: run-ci
+    #     uses: ./.github/workflows/Deploy-Firebase-Function.yml
+    deploy-firebase-hosting:
+        needs: run-ci
+        uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
+        secrets: inherit
     deploy-firebase-functions:
         needs: run-ci
-        uses: ./.github/workflows/Deploy-Firebase-Functions.yml
+        uses: ./.github/workflows/Deploy-Firebase-Function.yml
+        secrets: inherit
