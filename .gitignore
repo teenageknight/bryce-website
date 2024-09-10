@@ -32,3 +32,6 @@ firebase-debug.log
 coverage/
 
 app/src/output.css
+
+functions/.env/
+.env
