@@ -10,7 +10,8 @@
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
-const geocoder = new Geocodio(process.env.GEOCODIO_API_KEY);
+
+console.log("TESTING TESTING 123");
 
 // import * as logger from "firebase-functions/logger";
 
@@ -72,12 +73,13 @@ function parseAddress(address_query_geocode: string, geocodio_address: any) {
     return address;
 }
 
-export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request => {
+export const validateAddresses = onCall({ timeoutSeconds: 120, secrets: ["GEOCODIO_API_KEY"] }, async request => {
     console.log("request.body", request.data.addresses);
     console.log("request.body", request.data.addresses.length);
     const addresses = request.data.addresses;
     const addresses_response: any[] = [];
     const invalid_addresses: any[] = [];
+    const geocoder = new Geocodio(process.env.GEOCODIO_API_KEY);
 
     const batchGeocodeResult = await geocoder.geocode(addresses, ["census2020"]).catch((err: any) => {
         console.warn(err);
@@ -103,7 +105,12 @@ export const validateAddresses = onCall({ timeoutSeconds: 120 }, async request =
 
     const validAddresses = addresses_response.map(address => address.address_query);
 
-    return { addresses: addresses_response, invalid_addresses: invalid_addresses, validAddresses: validAddresses };
+    return {
+        addresses: addresses_response,
+        invalid_addresses: invalid_addresses,
+        validAddresses: validAddresses,
+        penguins: "penguins",
+    };
 });
 
 export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request => {

@@ -22,7 +22,6 @@ const variantStyles = {
 
 const Button: React.FC<ButtonProps> = p => {
     const { onClick, disabled, className, variant, children } = p;
-    console.log(variant);
 
     return (
         <button
