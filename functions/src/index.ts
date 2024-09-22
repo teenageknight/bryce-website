@@ -6,7 +6,6 @@
  *
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
-
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
@@ -221,3 +220,5 @@ export const getCJESTDataQuery = onCall({ timeoutSeconds: 120, secrets: ["GEOCOD
 
     return { disadvantaged: disadvantaged };
 });
+
+console.log("Hi");
