@@ -234,6 +234,9 @@ function parseCJESTResults(cjestResults: any, tableData: any): any[] {
         const cjestResult = cjestResults[i];
         const index = findAddressInTable(cjestResult.addresses, newTable);
         if (index !== undefined) {
+            // HACK: _isDisadvanted has an underscore becuase when javascript adds this value to the map that is the rows key value pairs,
+            // it automatically sorts it alphabetically. This reorders the column orders, which screws with the formulas that are
+            // hardcoded into the XLSX file. This, the underscore, is a hack to get around this.
             newTable[index]._isDisadvantaged = cjestResult.isDisadvantaged;
         } else {
             console.error("Address not found in table: ", cjestResult.addresses);
