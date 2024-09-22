@@ -9,13 +9,10 @@ on:
 jobs:
     run-ci:
         uses: ./.github/workflows/CI.yml
-    # deploy-firebase-functions:
+    # deploy-firebase-hosting:
     #     needs: run-ci
-    #     uses: ./.github/workflows/Deploy-Firebase-Function.yml
-    deploy-firebase-hosting:
-        needs: run-ci
-        uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
-        secrets: inherit
+    #     uses: ./.github/workflows/Deploy-Firebase-Hosting.yml
+    #     secrets: inherit
     deploy-firebase-functions:
         needs: run-ci
         uses: ./.github/workflows/Deploy-Firebase-Function.yml
