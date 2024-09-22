@@ -6,7 +6,6 @@
  *
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
-console.log("first thing it sees");
 import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
@@ -14,7 +13,7 @@ const Geocodio = require("geocodio-library-node");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// Manually switch this on for local testing until i figure out how to automate this with env variables
+// Manually switch this on for local testing until I figure out how to automate this with env variables
 if (false) {
     const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 

@@ -8,7 +8,7 @@ typings/
 # Node.js dependency directory
 node_modules/
 
-bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json
+service-account-keys
 
 cjest.csv
 cjest.js
