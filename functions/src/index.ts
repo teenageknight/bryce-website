@@ -45,7 +45,7 @@ if (false) {
     initializeApp();
 }
 
-initializeApp();
+// initializeApp();
 
 const db = getFirestore();
 
