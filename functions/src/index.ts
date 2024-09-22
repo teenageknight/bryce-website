@@ -11,7 +11,7 @@ import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
 
-const { initializeApp, cert } = require("firebase-admin/app");
+const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
 // let serviceAccountLocal: any;
