@@ -25,7 +25,8 @@ const { getFirestore } = require("firebase-admin/firestore");
 //     console.log("Using service account from env");
 //     serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
 // }
-
+console.log("right outside of the if");
+console.log(process.env.FIREBASE_SERVICE_ACCOUNT);
 const config = {
     credential: cert(process.env.FIREBASE_SERVICE_ACCOUNT),
 };
