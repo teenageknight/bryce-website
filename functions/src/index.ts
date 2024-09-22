@@ -26,9 +26,10 @@ const serviceAccountLocal = require("../service-account-keys/bryce-jackson-websi
 //     serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
 // }
 console.log("right outside of the if");
+console.log(serviceAccountLocal);
 console.log(process.env.FIREBASE_SERVICE_ACCOUNT);
 const config = {
-    credential: cert(serviceAccountLocal),
+    credential: cert(process.env.FIREBASE_SERVICE_ACCOUNT),
 };
 
 initializeApp(config);
