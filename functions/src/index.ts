@@ -16,6 +16,7 @@ const { getFirestore } = require("firebase-admin/firestore");
 
 let serviceAccountLocal: any;
 if (location.hostname === "localhost") {
+    console.log("Using local service account");
     serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 }
 // FIXME: THIS LIKELY WILL BREAK CD IN THE FUTURE. THIS IS BECUASE THE SERVICE ACCOUNT IS NOT CHECKED
