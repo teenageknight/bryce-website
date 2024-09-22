@@ -1,7 +1,13 @@
 import React, { useEffect, useReducer } from "react";
 
 import { validateAddress } from "../services/functions";
-import { writeGeocodeToTable, getCensusData, parseCensusResults, formatTableDataForXLSX } from "../utils/census/census";
+import {
+    writeGeocodeToTable,
+    getCensusData,
+    parseCensusResults,
+    formatTableDataForXLSX,
+    getCJESTData,
+} from "../utils/census/census";
 import { ExportExcel } from "../components/export-excel/export-excel";
 import { Button } from "../components/button/Button";
 import { ProgressBar } from "../components/progress-bar/Progress-Bar";
@@ -78,6 +84,7 @@ export function FWACalculatorPage() {
                     status: "error",
                 };
             case "reset":
+                setProgress(0);
                 return initialFormState;
             default:
                 return state;
@@ -222,7 +229,19 @@ export function FWACalculatorPage() {
         formDispatch({ type: "update_status", payload: "parsing-census" });
         table = parseCensusResults(censusResults, table);
 
-        // 4. Download the table
+        // 4. Get the CJEST data
+        formDispatch({ type: "update_status", payload: "getting-cjest" });
+        try {
+            table = await getCJESTData(table); // TODO: There is no progress indicator here, even though this could take some time.
+        } catch (error) {
+            console.log(error);
+            formDispatch({ type: "form_submitted_failure", payload: "error" });
+            return;
+        }
+
+        console.log("table", table);
+
+        // 5. Download the table
         formDispatch({ type: "form_submitted_success", payload: table });
     };
 

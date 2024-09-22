@@ -1,4 +1,5 @@
-import { getCensusDataQuery } from "../../services/functions";
+import { a } from "vitest/dist/suite-CRLAhsm0.js";
+import { getCensusDataQuery, getCJESTDataQuery } from "../../services/functions";
 
 enum AddressStatus {
     Pending = "Pending",
@@ -184,18 +185,61 @@ async function getCensusData(tableData: any, setProgress: React.Dispatch<React.S
     let censusResults: any[] = [];
 
     for (let i = 0; i < tableData.length / 20; i++) {
-        console.log(i);
-        console.log("getting query");
         let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch((err: any) =>
             console.log(err)
         );
-        console.log(tableData.length);
 
         setProgress(((i + 1) / Math.ceil(tableData.length / 20)) * 100);
 
         censusResults = censusResults.concat(result.data.response);
     }
     return censusResults;
+}
+
+async function getCJESTData(tableData: any) {
+    let cjestResults: any[] = [];
+
+    for (let i = 0; i < tableData.length / 20; i++) {
+        const slicedTableData = tableData.slice(i * 20, i * 20 + 20);
+        const slicedTableAddresses = slicedTableData.map((row: any) => row.address);
+
+        let result: any = await getCJESTDataQuery({ addresses: slicedTableAddresses }).catch((err: any) =>
+            console.log(err)
+        );
+
+        cjestResults = cjestResults.concat(result.data.disadvantaged);
+    }
+
+    let newTable: any[] = [];
+
+    newTable = parseCJESTResults(cjestResults, tableData);
+
+    return newTable;
+}
+
+function findAddressInTable(address: string, tableData: any) {
+    let index: number | undefined;
+    for (let i = 0; i < tableData.length; i++) {
+        if (tableData[i].address === address) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+function parseCJESTResults(cjestResults: any, tableData: any): any[] {
+    let newTable: any[] = tableData.slice();
+    for (let i = 0; i < cjestResults.length; i++) {
+        const cjestResult = cjestResults[i];
+        const index = findAddressInTable(cjestResult.addresses, newTable);
+        if (index !== undefined) {
+            newTable[index]._isDisadvantaged = cjestResult.isDisadvantaged;
+        } else {
+            console.error("Address not found in table: ", cjestResult.addresses);
+        }
+    }
+    return newTable;
 }
 
 function parseCensusResults(censusResults: any, tableData: any) {
@@ -231,4 +275,11 @@ function formatTableDataForXLSX(tableData: any[]) {
     return newTable;
 }
 
-export { add_census_data_to_row, writeGeocodeToTable, getCensusData, parseCensusResults, formatTableDataForXLSX };
+export {
+    add_census_data_to_row,
+    writeGeocodeToTable,
+    getCensusData,
+    parseCensusResults,
+    formatTableDataForXLSX,
+    getCJESTData,
+};
