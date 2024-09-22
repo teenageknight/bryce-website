@@ -10,23 +10,26 @@ import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
 
-const { initializeApp } = require("firebase-admin/app");
+const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
+
+const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 
 // FIXME: THIS LIKELY WILL BREAK CD IN THE FUTURE. THIS IS BECUASE THE SERVICE ACCOUNT IS NOT CHECKED
 // INTO VERSION CONTROL, I WILL NEED TO ADD THIS AS A .ENV SIMILAR TO THE GEOCODIO API KEY.
-// const config = {
-//     credential: cert(require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json")),
-// };
 
-initializeApp();
+let serviceAccount = serviceAccountLocal;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+}
+
+const config = {
+    credential: cert(serviceAccount),
+};
+
+initializeApp(config);
 
 const db = getFirestore();
-
-// import * as logger from "firebase-functions/logger";
-
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
 
 type ParsedGeocodedAddress =
     | {
@@ -220,5 +223,3 @@ export const getCJESTDataQuery = onCall({ timeoutSeconds: 120, secrets: ["GEOCOD
 
     return { disadvantaged: disadvantaged };
 });
-
-console.log("Hi");
