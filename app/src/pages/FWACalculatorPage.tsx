@@ -239,8 +239,6 @@ export function FWACalculatorPage() {
             return;
         }
 
-        console.log("table", table);
-
         // 5. Download the table
         formDispatch({ type: "form_submitted_success", payload: table });
     };
