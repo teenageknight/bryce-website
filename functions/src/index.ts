@@ -19,6 +19,7 @@ const serviceAccountLocal = require("../service-account-keys/bryce-jackson-websi
 // INTO VERSION CONTROL, I WILL NEED TO ADD THIS AS A .ENV SIMILAR TO THE GEOCODIO API KEY.
 
 let serviceAccount = serviceAccountLocal;
+console.log("outside of the if");
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log("Using service account from env");
     serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
