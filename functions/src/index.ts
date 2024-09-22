@@ -14,26 +14,8 @@ const Geocodio = require("geocodio-library-node");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// let serviceAccountLocal: any;
-// console.log("log spam");
-// console.log("location.hostname", location.hostname);
-// if (location.hostname === "localhost") {
-//     console.log("Using local service account");
-//     serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
-// }
-// FIXME: THIS LIKELY WILL BREAK CD IN THE FUTURE. THIS IS BECUASE THE SERVICE ACCOUNT IS NOT CHECKED
-// INTO VERSION CONTROL, I WILL NEED TO ADD THIS AS A .ENV SIMILAR TO THE GEOCODIO API KEY.
-
-// let serviceAccount = serviceAccountLocal;
-// console.log("outside of the if");
-// if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-//     console.log("Using service account from env");
-//     serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-// }
-console.log("right outside of the if");
-// console.log(serviceAccountLocal);
-
-if (location.hostname === "localhost") {
+// Manually switch this on for local testing until i figure out how to automate this with env variables
+if (false) {
     const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 
     const config = {
@@ -44,8 +26,6 @@ if (location.hostname === "localhost") {
 } else {
     initializeApp();
 }
-
-// initializeApp();
 
 const db = getFirestore();
 
