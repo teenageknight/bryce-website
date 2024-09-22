@@ -14,13 +14,10 @@ const Geocodio = require("geocodio-library-node");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-console.log("lets try this");
-const test = require("../service-account-keys/test.json");
-console.log("test", test);
-
-console.log("right before loading in the service account");
-const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
-
+let serviceAccountLocal: any;
+if (location.hostname === "localhost") {
+    serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
+}
 // FIXME: THIS LIKELY WILL BREAK CD IN THE FUTURE. THIS IS BECUASE THE SERVICE ACCOUNT IS NOT CHECKED
 // INTO VERSION CONTROL, I WILL NEED TO ADD THIS AS A .ENV SIMILAR TO THE GEOCODIO API KEY.
 
@@ -32,11 +29,16 @@ const serviceAccountLocal = require("../service-account-keys/bryce-jackson-websi
 // }
 console.log("right outside of the if");
 // console.log(serviceAccountLocal);
-const config = {
-    credential: cert(serviceAccountLocal),
-};
 
-initializeApp(config);
+if (serviceAccountLocal) {
+    const config = {
+        credential: cert(serviceAccountLocal),
+    };
+
+    initializeApp(config);
+} else {
+    initializeApp();
+}
 
 const db = getFirestore();
 
