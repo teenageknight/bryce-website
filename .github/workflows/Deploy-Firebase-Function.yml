@@ -14,7 +14,7 @@ jobs:
             - name: Build
               run: cd functions/ && npm run build
             - name: Write Secrets
-              run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json
+              run: cd functions && mkdir service-account-keys && cd service-account-keys && echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json
             - name: Deploy
               run: cd functions/ && npx firebase-tools use prod && npx firebase-tools deploy --only functions
               env:
