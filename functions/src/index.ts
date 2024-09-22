@@ -14,6 +14,10 @@ const Geocodio = require("geocodio-library-node");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
+console.log("lets try this");
+const test = require("../service-account-keys/test.json");
+console.log("test", test);
+
 console.log("right before loading in the service account");
 const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 
