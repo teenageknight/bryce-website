@@ -11,7 +11,7 @@ import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
 
-const { initializeApp } = require("firebase-admin/app");
+const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
 // let serviceAccountLocal: any;
@@ -33,15 +33,17 @@ const { getFirestore } = require("firebase-admin/firestore");
 console.log("right outside of the if");
 // console.log(serviceAccountLocal);
 
-// if (serviceAccountLocal) {
-//     const config = {
-//         credential: cert(serviceAccountLocal),
-//     };
+if (false) {
+    const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 
-//     initializeApp(config);
-// } else {
-//     initializeApp();
-// }
+    const config = {
+        credential: cert(serviceAccountLocal),
+    };
+
+    initializeApp(config);
+} else {
+    initializeApp();
+}
 
 initializeApp();
 
