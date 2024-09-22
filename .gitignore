@@ -26,9 +26,13 @@ dist-ssr
 # Firebase
 /.firebase
 firebase-debug.log
+ui-debug.log
 
 .github/workflows/deploy-github-pages.yml
 
 coverage/
 
 app/src/output.css
+
+functions/.env/
+.env

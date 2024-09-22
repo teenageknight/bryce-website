@@ -1,6 +1,4 @@
 import { initializeApp } from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
 
 // TODO: Use a configuration object
 const firebaseConfig = {
@@ -15,11 +13,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// eslint-disable-next-line no-restricted-globals
-if (location.hostname === "localhost") {
-    // db.useEmulator("localhost", 8080);
-    // auth().useEmulator("http://localhost:9099/", { disableWarnings: true });
-}
 
 export { app };

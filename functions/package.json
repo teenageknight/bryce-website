@@ -8,7 +8,8 @@
         "shell": "npm run build && firebase functions:shell",
         "start": "npm run shell",
         "deploy": "firebase deploy --only functions",
-        "logs": "firebase functions:log"
+        "logs": "firebase functions:log",
+        "start:emulator": "concurrently \"npm run build:watch\" \"firebase emulators:start --only functions\""
     },
     "engines": {
         "node": "18"
@@ -17,11 +18,12 @@
     "dependencies": {
         "firebase-admin": "^11.8.0",
         "firebase-functions": "^4.3.1",
-        "geocodio-library-node": "^1.5.0",
         "firebase-tools": "^12.4.0",
+        "geocodio-library-node": "^1.5.0",
         "node-fetch": "2.6.1"
     },
     "devDependencies": {
+        "concurrently": "^9.0.1",
         "firebase-functions-test": "^3.1.0",
         "typescript": "^4.9.0"
     },
