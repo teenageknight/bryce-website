@@ -10,5 +10,6 @@ if (location.hostname === "localhost") {
 
 const validateAddress = httpsCallable(functions, "validateAddresses");
 const getCensusDataQuery = httpsCallable(functions, "getCensusDataQuery");
+const getCJESTDataQuery = httpsCallable(functions, "getCJESTDataQuery");
 
 export { validateAddress, getCensusDataQuery, functions };

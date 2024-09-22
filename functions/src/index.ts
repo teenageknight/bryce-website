@@ -11,8 +11,6 @@ import { onCall } from "firebase-functions/v2/https";
 const fetch = require("node-fetch");
 const Geocodio = require("geocodio-library-node");
 
-console.log("TESTING TESTING 123");
-
 // import * as logger from "firebase-functions/logger";
 
 // Start writing functions
@@ -109,7 +107,6 @@ export const validateAddresses = onCall({ timeoutSeconds: 120, secrets: ["GEOCOD
         addresses: addresses_response,
         invalid_addresses: invalid_addresses,
         validAddresses: validAddresses,
-        penguins: "penguins",
     };
 });
 
@@ -152,4 +149,37 @@ export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request 
     }
 
     return { response: json_responses, error: errors };
+});
+
+export const getCJESTDataQuery = onCall({ timeoutSeconds: 120, secrets: ["GEOCODIO_API_KEY"] }, async request => {
+    console.log("request.body", request.data);
+    const addresses = request.data.addresses;
+    // const addresses_response: any[] = [];
+    const invalid_addresses: any[] = [];
+    const geocoder = new Geocodio(process.env.GEOCODIO_API_KEY);
+
+    const batchGeocodeResult = await geocoder.geocode(addresses, ["census2010"]).catch((err: any) => {
+        console.warn(err);
+    });
+
+    console.log("Successfully got batch geocode results.");
+    console.log("Quantity: ", batchGeocodeResult.results.length);
+
+    batchGeocodeResult.results.forEach((result: any) => {
+        if (result.response?.results && result.response.results.length > 0) {
+            const response_address = result.response.results[0];
+            console.log("response_address", response_address);
+            // addresses_response.push(parseAddress(result.query, response_address));
+        } else {
+            console.log("No match for address: ", result.address);
+            invalid_addresses.push(result.query);
+        }
+    });
+
+    // The following code is for the CJEST methodology, and determining if any given address
+    // meets the criteria laid for the address to be considered burdened. For more information,
+    // see the CJEST methodology documentation.
+    // https://screeningtool.geoplatform.gov/en/methodology#3/33.47/-97.5
+
+    return batchGeocodeResult.results;
 });
