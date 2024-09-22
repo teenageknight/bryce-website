@@ -20,6 +20,7 @@ const serviceAccountLocal = require("../service-account-keys/bryce-jackson-websi
 
 let serviceAccount = serviceAccountLocal;
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log("Using service account from env");
     serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
 }
 
