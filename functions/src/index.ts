@@ -33,7 +33,7 @@ const { getFirestore } = require("firebase-admin/firestore");
 console.log("right outside of the if");
 // console.log(serviceAccountLocal);
 
-if (false) {
+if (location.hostname === "localhost") {
     const serviceAccountLocal = require("../service-account-keys/bryce-jackson-website-firebase-adminsdk-ra4es-7428ff5320.json");
 
     const config = {
