@@ -89,6 +89,9 @@ function parseAddress(address_query_geocode: string, geocodio_address: any) {
     return address;
 }
 
+/*
+This secret is defined using the firebase secrets manager, not the github secrets manager.
+*/
 export const validateAddresses = onCall({ timeoutSeconds: 120, secrets: ["GEOCODIO_API_KEY"] }, async request => {
     console.log("request.body", request.data.addresses);
     console.log("request.body", request.data.addresses.length);
