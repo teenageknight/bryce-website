@@ -200,11 +200,8 @@ async function getCJESTData(tableData: any) {
 
     for (let i = 0; i < tableData.length / 20; i++) {
         const slicedTableData = tableData.slice(i * 20, i * 20 + 20);
-        const slicedTableAddresses = slicedTableData.map((row: any) => row.address);
 
-        let result: any = await getCJESTDataQuery({ addresses: slicedTableAddresses }).catch((err: any) =>
-            console.log(err)
-        );
+        let result: any = await getCJESTDataQuery({ addresses: slicedTableData }).catch((err: any) => console.log(err));
 
         cjestResults = cjestResults.concat(result.data.disadvantaged);
     }
@@ -236,7 +233,8 @@ function parseCJESTResults(cjestResults: any, tableData: any): any[] {
             // HACK: _isDisadvanted has an underscore becuase when javascript adds this value to the map that is the rows key value pairs,
             // it automatically sorts it alphabetically. This reorders the column orders, which screws with the formulas that are
             // hardcoded into the XLSX file. This, the underscore, is a hack to get around this.
-            newTable[index]._isDisadvantaged = cjestResult.isDisadvantaged;
+            newTable[index]._isDisadvantagedEPA = cjestResult.isDisadvantaged;
+            newTable[index]._isCEJST = cjestResult.CEJST;
         } else {
             console.error("Address not found in table: ", cjestResult.addresses);
         }

@@ -105,6 +105,18 @@ export function FWACalculatorPage() {
         }
     };
 
+    const handleAddNewAddress = (currentAddress: string) => {
+        if (currentAddress.trim() !== "") {
+            console.log("address", currentAddress);
+            formDispatch({
+                type: "add_addresses_and_update_current_address_line",
+                payload: { addresses: [currentAddress], currentAddressLine: "" },
+            });
+        } else {
+            alert("Please enter a valid address");
+        }
+    };
+
     /*
         This use effect is specifically for resizing the arrays any time the addresses change. Since its javascript, technically
         we dont have to do this, but idk, it made sense to me.
@@ -159,6 +171,7 @@ export function FWACalculatorPage() {
 
             await Promise.all(promises);
             const results = await Promise.all(promises);
+            console.log(results);
             let resultsFormatted: { addresses: string[]; invalid_addresses: string[]; valid_addresses: string[] } = {
                 addresses: [],
                 invalid_addresses: [],
@@ -175,6 +188,7 @@ export function FWACalculatorPage() {
 
             let tempStatus = [...formState.addressStatus];
             let tempGeocodeResults = [...formState.geocodeResults];
+
             for (let i = 0; i < indexes.length; i++) {
                 if (resultsFormatted.invalid_addresses.includes(formState.addresses[indexes[i]])) {
                     tempStatus[indexes[i]] = AddressStatus.Invalid;
@@ -256,9 +270,13 @@ export function FWACalculatorPage() {
                 farm, community garden, and orchard sites in Food Well Alliance’s service area.
             </p>
 
-            <AddressInputGrid formState={formState} handleAddressInputChange={handleAddressInputChange} />
+            <AddressInputGrid
+                formState={formState}
+                handleAddressInputChange={handleAddressInputChange}
+                handleAddNewAddress={handleAddNewAddress}
+            />
 
-            <div className="flex flex-row m-3">
+            <div className="flex flex-row my-3">
                 {formState.status !== "" && (
                     <div>
                         <Button

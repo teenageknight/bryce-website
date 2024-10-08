@@ -166,58 +166,71 @@ export const getCensusDataQuery = onCall({ timeoutSeconds: 120 }, async request 
     return { response: json_responses, error: errors };
 });
 
-export const getCJESTDataQuery = onCall({ timeoutSeconds: 120, secrets: ["GEOCODIO_API_KEY"] }, async request => {
-    console.log("request.body", request.data);
+export const getCJESTDataQuery = onCall({ timeoutSeconds: 120 }, async request => {
+    // console.log("request.body", request.data);
     const addresses = request.data.addresses;
-    const addresses_response: any[] = [];
+    // const addresses_response: any[] = [];
     const disadvantaged: any[] = []; // This is a list of addresses keyed to a boolean value of whether or not they are disadvantaged
-    const invalid_addresses: any[] = [];
-    const geocoder = new Geocodio(process.env.GEOCODIO_API_KEY);
+    // const invalid_addresses: any[] = [];
 
-    const batchGeocodeResult = await geocoder.geocode(addresses, ["census2010"]).catch((err: any) => {
-        console.warn(err);
-    });
+    // This is dead code used to refrence the CJEST Collection, which uses 2010 data.
+    // const geocoder = new Geocodio(process.env.GEOCODIO_API_KEY);
 
-    console.log("Successfully got batch geocode results.");
-    console.log("Quantity: ", batchGeocodeResult.results.length);
+    // const batchGeocodeResult = await geocoder.geocode(addresses, ["census2010"]).catch((err: any) => {
+    //     console.warn(err);
+    // });
 
-    // Initalize the collection reference for the cjest collection
-    const cjestCollectionRef = db.collection("cjest");
+    // console.log("Successfully got batch geocode results.");
+    // console.log("Quantity: ", batchGeocodeResult.results.length);
 
-    for (let i = 0; i < batchGeocodeResult.results.length; i++) {
+    // Initalize the collection reference for the cjest-epa collection
+    const cjestCollectionRef = db.collection("cjest-epa");
+
+    console.log("here we are");
+
+    for (let i = 0; i < addresses.length; i++) {
         // batchGeocodeResult.results.forEach((result: any) => {
-        const result = batchGeocodeResult.results[i];
-        if (result.response?.results && result.response.results.length > 0) {
-            const response_address = result.response.results[0];
-            console.log("response_address", response_address);
-            addresses_response.push(response_address);
+        // const result = batchGeocodeResult.results[i];
+        // if (result.response?.results && result.response.results.length > 0) {
+        //     const response_address = result.response.results[0];
+        //     console.log("response_address", response_address);
+        //     addresses_response.push(response_address);
 
-            // Get the FIPS code for the address. We need to remove the last 4 characters, which are the state FIPS code, and something else.
-            let fullFips = response_address["fields"]["census"]["2010"]["full_fips"].toString();
-            fullFips = fullFips.substring(0, fullFips.length - 4);
+        let fullFips =
+            addresses[i]["state_code"] +
+            addresses[i]["county_code"] +
+            addresses[i]["tract_code"] +
+            addresses[i]["block_group"];
 
-            // The following code is for the CJEST methodology, and determining if any given address
-            // meets the criteria laid for the address to be considered burdened. For more information,
-            // see the CJEST methodology documentation.
-            // https://screeningtool.geoplatform.gov/en/methodology#3/33.47/-97.5
-            const cjestValueRef = cjestCollectionRef.doc(fullFips);
-            const doc = await cjestValueRef.get();
+        console.log(fullFips);
 
-            if (doc.exists) {
-                // NOTE: Evemtually, if more functionality is ever wanted, please refer to the following technical documentation:
-                // https://static-data-screeningtool.geoplatform.gov/data-versions/1.0/data/score/downloadable/1.0-cejst-technical-support-document.pdf
-                // This documant on page 6 has the information we are using, but we are only using the column that check is the area is considered
-                // "disadvantaged" or not. In the future, we may want more columns, but for now, this is all we need.
-                // const burdenedData = parseBurdenedAddressData(doc.data());
-                let isDisadvantaged = doc.data()["Identified as disadvantaged"];
-                disadvantaged.push({ addresses: result.query, isDisadvantaged: isDisadvantaged });
-            } else {
-                console.error("No document found for FIPS code: ", fullFips);
-                disadvantaged.push({ addresses: result.query, isDisadvantaged: false });
-            }
+        // The following code is for the CJEST methodology, and determining if any given address
+        // meets the criteria laid for the address to be considered burdened. For more information,
+        // see the CJEST methodology documentation.
+        // https://screeningtool.geoplatform.gov/en/methodology#3/33.47/-97.5
+        const cjestValueRef = cjestCollectionRef.doc(fullFips);
+        const doc = await cjestValueRef.get();
+
+        if (doc.exists) {
+            // NOTE: OUTDATED COMMENT BELOW
+            // NOTE: Evemtually, if more functionality is ever wanted, please refer to the following technical documentation:
+            // https://static-data-screeningtool.geoplatform.gov/data-versions/1.0/data/score/downloadable/1.0-cejst-technical-support-document.pdf
+            // This documant on page 6 has the information we are using, but we are only using the column that check is the area is considered
+            // "disadvantaged" or not. In the future, we may want more columns, but for now, this is all we need.
+
+            //
+            // const burdenedData = parseBurdenedAddressData(doc.data());
+            let isDisadvantaged = doc.data()["Disadvantaged"];
+            let isCEJST = doc.data()["CEJST"];
+
+            disadvantaged.push({
+                addresses: addresses[i]["address"],
+                isDisadvantaged: isDisadvantaged,
+                CEJST: isCEJST,
+            });
         } else {
-            console.log("No match for address: ", result.address);
-            invalid_addresses.push(result.query);
+            console.error("No document found for FIPS code: ", fullFips);
+            disadvantaged.push({ addresses: addresses[i]["address"], isDisadvantaged: false, CEJST: false });
         }
     }
 

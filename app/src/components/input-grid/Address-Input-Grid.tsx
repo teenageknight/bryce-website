@@ -9,15 +9,16 @@ import { InputGrid } from "./Input-Grid";
 
 import type { RowProps } from "./Input-Grid";
 import type { FormState } from "../../utils/census/census-types";
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, XCircleIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 
 interface AddressInputGridProps {
     formState: FormState;
     handleAddressInputChange: (e: any) => void;
+    handleAddNewAddress: (currentAddressLine: string) => void;
 }
 
 const AddressInputGrid: React.FC<AddressInputGridProps> = p => {
-    const { formState, handleAddressInputChange } = p;
+    const { formState, handleAddressInputChange, handleAddNewAddress } = p;
 
     return (
         <InputGrid columns={2}>
@@ -50,9 +51,17 @@ const AddressInputGrid: React.FC<AddressInputGridProps> = p => {
                     placeholder="Address"
                     value={formState.currentAddressLine}
                     onChange={e => handleAddressInputChange(e)}
-                    onKeyDown={e => e.key === "Enter"}
                 />
-                <p>Plus button to add</p>
+                <button
+                    style={{ height: "100%" }}
+                    disabled={formState.currentAddressLine.trim() === ""}
+                    onClick={() => handleAddNewAddress(formState.currentAddressLine)}>
+                    <PlusCircleIcon
+                        color={formState.currentAddressLine.trim() === "" ? "gray" : "green"}
+                        // className="hover:bg-green-500"
+                        height={"100%"}
+                    />
+                </button>
             </InputGrid.Row>
         </InputGrid>
     );
