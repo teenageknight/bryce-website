@@ -310,50 +310,10 @@ export function FWACalculatorPage() {
                 )}
             </div>
             <p className="text-[#8D96A0]">For any inquires, please reach out to bkajackson9@gmail.com.</p>
+            <p className="text-white font-bold">
+                Funding provided, in part, by the Inflation Reduction Act and the USDA Forest Service, Urban and
+                Community Forestry Program. Food Well Alliance is an equal opportunity provider.
+            </p>
         </div>
     );
-}
-
-{
-    /* <ol className="list-decimal">
-                <li>
-                    Compile a list of the addresses you seek to find census date for (for example: 2022 Fall Orchards
-                    Listing)
-                </li>
-                <li>
-                    Each address should be on its own line and should be formatted as follows: 970 Jefferson Street NW,
-                    Atlanta, GA 30318
-                </li>
-                <li>
-                    Once you have entered all addresses, click submit. The button will be disabled, and a query will run
-                    to help validate each address. (This is essentially a request to{" "}
-                    <a
-                        className="text-blue-600"
-                        href="https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress">
-                        https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress
-                    </a>
-                    , which is a geocoding service)
-                </li>
-                <li>
-                    If the address is invalid, it will show that on the page, and the address will be removed from the
-                    output list.
-                </li>
-                <li>
-                    To fix this, please use an address nearby (search Google maps for an address that is adjacent) and
-                    resubmit to validate.
-                </li>
-                <li>
-                    Once the addresses are validated, the addresses are then passed to the census API (application
-                    programming interface-ie- the automation tool) to get the census data.
-                </li>
-                <li>Once the census data is retrieved, the data is then parsed and formatted in a table format.</li>
-                <li>
-                    This request may take some time, so be patient. Requests are chucked in groups of 20 to handle large
-                    requests and to not stall, so the progress bar will jump in increments to reflect this.
-                </li>
-                <li>
-                    Once the table is complete, you will be prompted with an option to download the excel data. If you
-                    need to reset the form, you can do so by clicking the reset button.
-                </li>
-            </ol> */
 }
