@@ -1,0 +1,19 @@
+name: CI
+on:
+    push:
+    workflow_call:
+jobs:
+    lint-and-type:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+            - name: Install Node modules
+              run: cd app/ && npm install
+            - name: Linting
+              run: echo 'TODO Add Linting'
+            - name: Type
+              run: cd app/ && tsc

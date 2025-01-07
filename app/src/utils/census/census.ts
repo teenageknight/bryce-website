@@ -1,0 +1,285 @@
+import { getCensusDataQuery, getCJESTDataQuery } from "../../services/functions";
+
+enum AddressStatus {
+    Pending = "Pending",
+    Valid = "Valid",
+    Invalid = "Invalid",
+}
+
+export function createObject(arr1: any[], arr2: any[]) {
+    if (arr1.length !== arr2.length) {
+        throw new Error("Arrays must have the same length");
+    }
+
+    const obj: any = {};
+
+    for (let i = 0; i < arr1.length; i++) {
+        const key = arr1[i];
+        const value = arr2[i];
+
+        obj[key] = value;
+    }
+
+    return obj;
+}
+
+const census_codes: any = {
+    POPULATION: "B01001_001E",
+    population04: ["B01001_003E", "B01001_027E"],
+    population0517: ["B01001_004E", "B01001_005E", "B01001_006E", "B01001_028E", "B01001_029E", "B01001_030E"],
+    // Just going to do this as a calculation for now
+    // population1864: [
+    //     "B01001_007E",
+    //     "B01001_008E",
+    //     "B01001_009E",
+    //     "B01001_010E",
+    //     "B01001_011E",
+    //     "B01001_012E",
+    //     "B01001_013E",
+    //     "B01001_014E",
+    //     "B01001_015E",
+    //     "B01001_016E",
+    //     "B01001_017E",
+    //     "B01001_018E",
+    //     "B01001_019E",
+    //     "B01001_031E",
+    //     "B01001_032E",
+    //     "B01001_033E",
+    //     "B01001_034E",
+    //     "B01001_035E",
+    //     "B01001_036E",
+    //     "B01001_037E",
+    //     "B01001_038E",
+    //     "B01001_039E",
+    //     "B01001_040E",
+    //     "B01001_041E",
+    //     "B01001_042E",
+    //     "B01001_043E",
+    // ],
+    population65: [
+        "B01001_020E",
+        "B01001_021E",
+        "B01001_022E",
+        "B01001_023E",
+        "B01001_024E",
+        "B01001_025E",
+        "B01001_044E",
+        "B01001_045E",
+        "B01001_046E",
+        "B01001_047E",
+        "B01001_048E",
+        "B01001_049E",
+    ],
+    households: "B11001_001E",
+    householdsbp: "B17017_002E",
+    mhi: "B19013_001E",
+    labor_force: "B23025_002E",
+    unemployed: "B23025_005E",
+    median_resident_age: "B01002_001E",
+    actual_latino: "B03003_003E",
+    actual_black: "B02001_003E",
+    actual_white: "B02001_002E",
+    actual_asian: "B02001_005E",
+    actual_indian: "B02001_004E",
+    actual_multi_race: "B02001_008E",
+};
+
+function add_census_data_to_row(row: any, census_data: any[], index: number) {
+    if (census_data.length >= 1) {
+        const census_data_final = createObject(census_data[0], census_data[1]);
+        const population = census_data_final[census_codes.POPULATION];
+
+        // Population under 4 is sum of boys and girls
+        let population04 = 0;
+        census_codes.population04.forEach((code: string) => {
+            population04 += parseInt(census_data_final[code]);
+        });
+
+        let population0517 = 0;
+        census_codes.population0517.forEach((code: string) => {
+            population0517 += parseInt(census_data_final[code]);
+        });
+
+        let population65 = 0;
+        census_codes.population65.forEach((code: string) => {
+            population65 += parseInt(census_data_final[code]);
+        });
+
+        const households = census_data_final[census_codes.households];
+        const householdsbp = census_data_final[census_codes.householdsbp];
+        const mhi = census_data_final[census_codes.mhi];
+        const labor_force = census_data_final[census_codes.labor_force];
+        const unemployed = census_data_final[census_codes.unemployed];
+        const median_resident_age = census_data_final[census_codes.median_resident_age];
+        const actual_latino = census_data_final[census_codes.actual_latino];
+        const actual_black = census_data_final[census_codes.actual_black];
+        const actual_white = census_data_final[census_codes.actual_white];
+        const actual_asian = census_data_final[census_codes.actual_asian];
+        const actual_indian = census_data_final[census_codes.actual_indian];
+        const actual_multi_race = census_data_final[census_codes.actual_multi_race];
+
+        const rowNumStr = (index + 2).toString();
+
+        // row["address"] = census_data_final[];
+        row["population"] = population;
+        row["population04"] = population04;
+        row["population0517"] = population0517;
+        row["population1864"] = population - population04 - population0517 - population65;
+        row["population65"] = population65;
+        row["households"] = households;
+        row["householdsbp"] = householdsbp;
+        row["perc_house_bp"] = "=Q" + rowNumStr + "/P" + rowNumStr;
+        row["mhi"] = mhi < -666666 ? "ERROR" : mhi; // -666666 sometimes is returned for this value, not sure why
+        row["labor_force"] = labor_force;
+        row["unemployed"] = unemployed;
+        row["perc_unemployed"] = "=U" + rowNumStr + "/K" + rowNumStr;
+        row["median_resident_age"] = median_resident_age;
+        row["perc_latino"] = "=Y" + rowNumStr + "/K" + rowNumStr;
+        row["actual_latino"] = actual_latino;
+        row["perc_black"] = "=AA" + rowNumStr + "/K" + rowNumStr;
+        row["actual_black"] = actual_black;
+        row["perc_white"] = "=AC" + rowNumStr + "/K" + rowNumStr;
+        row["actual_white"] = actual_white;
+        row["perc_asian"] = "=AE" + rowNumStr + "/K" + rowNumStr;
+        row["actual_asian"] = actual_asian;
+        row["perc_indian"] = "=AG" + rowNumStr + "/K" + rowNumStr;
+        row["actual_indian"] = actual_indian;
+        row["perc_multi_race"] = "=AI" + rowNumStr + "/K" + rowNumStr;
+        row["actual_multi_race"] = actual_multi_race;
+    }
+
+    console.log("row", row);
+    return row;
+}
+
+function writeGeocodeToTable(geocodeResults: any) {
+    let table: any[] = [];
+    geocodeResults.forEach((geocoding_data: any) => {
+        // Low key I think that the second condition is the only one that matters, but ill check it later.
+        console.log(geocoding_data);
+        if (geocoding_data !== AddressStatus.Invalid || geocoding_data !== undefined) {
+            console.log(geocoding_data);
+            // This is where the table data will be written to the table for the first time.
+            var row: any = {};
+            row["address"] = geocoding_data.formatted_address;
+            row["state"] = geocoding_data.state;
+            row["state_code"] = geocoding_data.state_code;
+            row["city"] = geocoding_data.city;
+            row["zip_code"] = geocoding_data.zip_code;
+            row["county"] = geocoding_data.county;
+            row["county_code"] = geocoding_data.county_code;
+            row["tract"] = geocoding_data.tract;
+            row["tract_code"] = geocoding_data.tract_code;
+            row["block_group"] = geocoding_data.block_group;
+
+            table.push(row);
+        }
+    });
+    return table;
+}
+
+async function getCensusData(tableData: any, setProgress: React.Dispatch<React.SetStateAction<number | undefined>>) {
+    // Same thing as geocode, chunk in groups of 20, update progress bar accordingly, both to limit runtime and show progress.
+    // Could consider in the future running the code in sync, but that would be a lot of requests.
+    let censusResults: any[] = [];
+
+    for (let i = 0; i < tableData.length / 20; i++) {
+        let result: any = await getCensusDataQuery({ table: tableData.slice(i * 20, i * 20 + 20) }).catch((err: any) =>
+            console.log(err)
+        );
+
+        setProgress(((i + 1) / Math.ceil(tableData.length / 20)) * 100);
+
+        censusResults = censusResults.concat(result.data.response);
+    }
+    return censusResults;
+}
+
+async function getCJESTData(tableData: any) {
+    let cjestResults: any[] = [];
+
+    for (let i = 0; i < tableData.length / 20; i++) {
+        const slicedTableData = tableData.slice(i * 20, i * 20 + 20);
+
+        let result: any = await getCJESTDataQuery({ addresses: slicedTableData }).catch((err: any) => console.log(err));
+
+        cjestResults = cjestResults.concat(result.data.disadvantaged);
+    }
+
+    let newTable: any[] = [];
+
+    newTable = parseCJESTResults(cjestResults, tableData);
+
+    return newTable;
+}
+
+function findAddressInTable(address: string, tableData: any) {
+    let index: number | undefined;
+    for (let i = 0; i < tableData.length; i++) {
+        if (tableData[i].address === address) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+function parseCJESTResults(cjestResults: any, tableData: any): any[] {
+    let newTable: any[] = tableData.slice();
+    for (let i = 0; i < cjestResults.length; i++) {
+        const cjestResult = cjestResults[i];
+        const index = findAddressInTable(cjestResult.addresses, newTable);
+        if (index !== undefined) {
+            // HACK: _isDisadvanted has an underscore becuase when javascript adds this value to the map that is the rows key value pairs,
+            // it automatically sorts it alphabetically. This reorders the column orders, which screws with the formulas that are
+            // hardcoded into the XLSX file. This, the underscore, is a hack to get around this.
+            newTable[index]._isDisadvantagedEPA = cjestResult.isDisadvantaged;
+            newTable[index]._isCEJST = cjestResult.CEJST;
+        } else {
+            console.error("Address not found in table: ", cjestResult.addresses);
+        }
+    }
+    return newTable;
+}
+
+function parseCensusResults(censusResults: any, tableData: any) {
+    let newTable: any[] = [];
+    censusResults.forEach((census_data: any, index: number) => {
+        // console.log(tableData[index])
+        let row = add_census_data_to_row(tableData[index], census_data, index);
+        newTable.push(row);
+    });
+    return newTable;
+}
+
+function formatTableDataForXLSX(tableData: any[]) {
+    let newTable: any[][] = [];
+
+    let headerRow: any[] = [];
+    Object.keys(tableData[0]).forEach((key: string) => {
+        headerRow.push({ t: "s", v: key });
+    });
+    newTable.push(headerRow);
+
+    tableData.forEach((row: any) => {
+        let newRow: any[] = [];
+        Object.keys(row).forEach((key: string) => {
+            if (typeof row[key] === "string" && row[key].startsWith("=")) {
+                newRow.push({ t: "n", f: row[key].slice(1) });
+            } else {
+                newRow.push(row[key]);
+            }
+        });
+        newTable.push(newRow);
+    });
+    return newTable;
+}
+
+export {
+    add_census_data_to_row,
+    writeGeocodeToTable,
+    getCensusData,
+    parseCensusResults,
+    formatTableDataForXLSX,
+    getCJESTData,
+};
